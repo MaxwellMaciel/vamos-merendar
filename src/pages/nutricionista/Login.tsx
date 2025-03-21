@@ -1,17 +1,18 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Logo from '../components/Logo';
-import PasswordInput from '../components/auth/PasswordInput';
+import Logo from '../../components/Logo';
+import PasswordInput from '../../components/auth/PasswordInput';
 import { IdCard } from 'lucide-react';
-import StatusBar from '../components/StatusBar';
+import StatusBar from '../../components/StatusBar';
+import BackButton from '../../components/ui/BackButton';
 import { useToast } from '@/hooks/use-toast';
 
-const Login = () => {
+const NutricionistaLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [matricula, setMatricula] = useState('');
+  const [siape, setSiape] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,46 +21,46 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
-    if (!matricula || !password) {
+    if (!siape || !password) {
       setError('Por favor, preencha todos os campos.');
       return;
     }
     
     setLoading(true);
     
-    // Simulando uma autenticação
+    // Simulando uma autenticação para nutricionista
     setTimeout(() => {
       setLoading(false);
       
-      // Simulação de login bem-sucedido para aluno
-      if (matricula.length >= 5 && password.length >= 6) {
+      // Credenciais fixas para nutricionista
+      if (siape === '12345' && password === 'Nutricionista@123') {
         toast({
           title: "Login bem-sucedido",
-          description: "Bem-vindo de volta ao Vamos Merendar!",
+          description: "Bem-vindo(a) de volta ao Vamos Merendar!",
         });
-        navigate('/aluno/dashboard');
+        navigate('/nutricionista/dashboard');
       } else {
-        setError('Matrícula/SIAPE ou senha inválidos.');
+        setError('SIAPE ou senha inválidos.');
       }
     }, 1000);
-  };
-
-  const handleRoleSelection = (role: string) => {
-    if (role === 'nutricionista') {
-      navigate('/nutricionista/login');
-    } else if (role === 'professor') {
-      navigate('/professor/login');
-    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white page-transition">
       <StatusBar />
       
+      <div className="p-4">
+        <BackButton to="/login" label="Voltar para login" />
+      </div>
+      
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <Logo size="md" className="mb-6" />
         
         <div className="w-full max-w-sm">
+          <h1 className="text-2xl font-bold text-center text-primary mb-6">
+            Login de Nutricionista
+          </h1>
+          
           {error && (
             <div className="mb-4 p-3 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary text-sm animate-in fade-in">
               {error}
@@ -74,9 +75,9 @@ const Login = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Matrícula/SIAPE"
-                  value={matricula}
-                  onChange={(e) => setMatricula(e.target.value)}
+                  placeholder="SIAPE"
+                  value={siape}
+                  onChange={(e) => setSiape(e.target.value)}
                   className="input-primary pl-10 w-full"
                 />
               </div>
@@ -108,40 +109,10 @@ const Login = () => {
               Esqueceu sua senha?
             </Link>
           </div>
-          
-          <div className="mt-6 flex items-center justify-center">
-            <div className="h-px bg-gray-200 flex-1"></div>
-            <span className="px-4 text-sm text-gray-500">ou entre como</span>
-            <div className="h-px bg-gray-200 flex-1"></div>
-          </div>
-          
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleRoleSelection('nutricionista')}
-              className="btn-outline text-center text-sm py-2"
-            >
-              Nutricionista
-            </button>
-            <button
-              onClick={() => handleRoleSelection('professor')}
-              className="btn-outline text-center text-sm py-2"
-            >
-              Professor(a)
-            </button>
-          </div>
-          
-          <div className="mt-6 text-center">
-            <span className="text-sm text-gray-600">
-              Não tem uma conta?{' '}
-              <Link to="/register" className="text-secondary font-medium hover:underline">
-                Cadastre-se
-              </Link>
-            </span>
-          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default NutricionistaLogin;

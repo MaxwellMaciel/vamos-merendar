@@ -98,9 +98,9 @@ const Dashboard = () => {
             </h2>
           </div>
           
-          <button className="text-primary hover:text-primary-dark transition-colors">
+          <Link to="/nutricionista/menu/edit-day" className="text-primary hover:text-primary-dark transition-colors">
             <Edit size={20} />
-          </button>
+          </Link>
         </div>
         
         <div className="space-y-4">

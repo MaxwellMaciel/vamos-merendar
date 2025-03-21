@@ -12,23 +12,49 @@ import { useToast } from '@/hooks/use-toast';
 const Dashboard = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [willAttend, setWillAttend] = useState<boolean | null>(null);
-  const [remainingMeals, setRemainingMeals] = useState(2);
+  const [mealAttendance, setMealAttendance] = useState({
+    breakfast: null as boolean | null,
+    lunch: null as boolean | null,
+    snack: null as boolean | null,
+  });
+  const [remainingMeals, setRemainingMeals] = useState(5);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-    setWillAttend(null); // Reset attendance when date changes
+    // Reset attendance when date changes
+    setMealAttendance({
+      breakfast: null,
+      lunch: null,
+      snack: null,
+    });
   };
 
-  const handleAttendance = (attend: boolean) => {
-    setWillAttend(attend);
+  const handleAttendance = (meal: 'breakfast' | 'lunch' | 'snack', attend: boolean) => {
+    setMealAttendance(prev => ({
+      ...prev,
+      [meal]: attend,
+    }));
     
-    toast({
-      title: attend ? "Presença confirmada" : "Ausência registrada",
-      description: attend 
-        ? "Sua presença foi confirmada para este dia." 
-        : "Sua ausência foi registrada para este dia.",
-    });
+    if (attend) {
+      toast({
+        title: "Presença confirmada",
+        description: `Sua presença foi confirmada para ${getMealName(meal)}.`,
+      });
+      setRemainingMeals(prev => Math.max(0, prev - 1));
+    } else {
+      toast({
+        title: "Ausência registrada",
+        description: `Sua ausência foi registrada para ${getMealName(meal)}.`,
+      });
+    }
+  };
+
+  const getMealName = (meal: 'breakfast' | 'lunch' | 'snack') => {
+    switch (meal) {
+      case 'breakfast': return "o café da manhã";
+      case 'lunch': return "o almoço";
+      case 'snack': return "o lanche da tarde";
+    }
   };
 
   return (
@@ -78,31 +104,90 @@ const Dashboard = () => {
       
       <div className="mx-6 mb-6 card-secondary">
         <h2 className="text-lg font-medium text-white mb-4">
-          Irá comparecer ao campus?
+          Confirme sua presença para as refeições:
         </h2>
         
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => handleAttendance(true)}
-            className={`py-2 rounded-md font-medium transition-all ${
-              willAttend === true
-                ? 'bg-accent text-primary'
-                : 'bg-white/10 text-white hover:bg-white/20'
-            }`}
-          >
-            Sim
-          </button>
+        <div className="space-y-4">
+          <div className="bg-white/10 rounded-lg p-3">
+            <h3 className="text-white font-medium mb-2">Café da Manhã</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleAttendance('breakfast', true)}
+                className={`py-2 rounded-md font-medium transition-all ${
+                  mealAttendance.breakfast === true
+                    ? 'bg-accent text-primary'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                Sim
+              </button>
+              
+              <button
+                onClick={() => handleAttendance('breakfast', false)}
+                className={`py-2 rounded-md font-medium transition-all ${
+                  mealAttendance.breakfast === false
+                    ? 'bg-accent text-primary'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                Não
+              </button>
+            </div>
+          </div>
           
-          <button
-            onClick={() => handleAttendance(false)}
-            className={`py-2 rounded-md font-medium transition-all ${
-              willAttend === false
-                ? 'bg-accent text-primary'
-                : 'bg-white/10 text-white hover:bg-white/20'
-            }`}
-          >
-            Não
-          </button>
+          <div className="bg-white/10 rounded-lg p-3">
+            <h3 className="text-white font-medium mb-2">Almoço</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleAttendance('lunch', true)}
+                className={`py-2 rounded-md font-medium transition-all ${
+                  mealAttendance.lunch === true
+                    ? 'bg-accent text-primary'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                Sim
+              </button>
+              
+              <button
+                onClick={() => handleAttendance('lunch', false)}
+                className={`py-2 rounded-md font-medium transition-all ${
+                  mealAttendance.lunch === false
+                    ? 'bg-accent text-primary'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                Não
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-white/10 rounded-lg p-3">
+            <h3 className="text-white font-medium mb-2">Lanche da Tarde</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleAttendance('snack', true)}
+                className={`py-2 rounded-md font-medium transition-all ${
+                  mealAttendance.snack === true
+                    ? 'bg-accent text-primary'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                Sim
+              </button>
+              
+              <button
+                onClick={() => handleAttendance('snack', false)}
+                className={`py-2 rounded-md font-medium transition-all ${
+                  mealAttendance.snack === false
+                    ? 'bg-accent text-primary'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                Não
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
