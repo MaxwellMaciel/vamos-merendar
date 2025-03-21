@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [hasConfirmedMeal, setHasConfirmedMeal] = useState(false);
 
   useEffect(() => {
@@ -31,12 +32,33 @@ const Dashboard = () => {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
         setUserId(data.user.id);
+        fetchUserProfile(data.user.id);
         fetchAttendance(data.user.id, selectedDate);
       }
     };
     
     fetchUser();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      if (data?.name) {
+        // Extrair o primeiro nome
+        const firstName = data.name.split(' ')[0];
+        setUserName(firstName);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchAttendance = async (userId: string, date: Date) => {
     try {
@@ -191,7 +213,9 @@ const Dashboard = () => {
               <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <h1 className="text-xl font-medium text-secondary">Olá, Aluno(a)!</h1>
+          <h1 className="text-xl font-medium text-secondary">
+            Olá, {userName || 'Aluno(a)'}!
+          </h1>
         </div>
         
         <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
@@ -226,7 +250,7 @@ const Dashboard = () => {
                 onClick={() => handleAttendance('breakfast', true)}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.breakfast === true
-                    ? 'bg-accent text-primary'
+                    ? 'bg-red-500 text-white'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
@@ -253,7 +277,7 @@ const Dashboard = () => {
                 onClick={() => handleAttendance('lunch', true)}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.lunch === true
-                    ? 'bg-accent text-primary'
+                    ? 'bg-red-500 text-white'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
@@ -280,7 +304,7 @@ const Dashboard = () => {
                 onClick={() => handleAttendance('snack', true)}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.snack === true
-                    ? 'bg-accent text-primary'
+                    ? 'bg-red-500 text-white'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
@@ -330,7 +354,7 @@ const Dashboard = () => {
         
         <div className="flex flex-col gap-4 w-1/3">
           <div 
-            className="bg-secondary rounded-xl p-4 text-white text-center flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/90 transition-colors"
+            className="bg-secondary rounded-xl p-4 text-white text-center flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/90 transition-colors shadow-sm"
             onClick={() => setShowFeedbackDialog(true)}
           >
             <MessageSquare size={24} className="mb-1" />
@@ -340,12 +364,18 @@ const Dashboard = () => {
           </div>
           
           <div 
-            className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-            onClick={() => hasConfirmedMeal ? setShowQRCode(true) : null}
+            className={`${hasConfirmedMeal ? 'bg-white border border-gray-200 hover:bg-gray-50' : 'bg-gray-100 border border-gray-200'} rounded-xl p-4 flex items-center justify-center cursor-pointer transition-colors shadow-sm`}
+            onClick={() => hasConfirmedMeal ? setShowQRCode(true) : 
+              toast({
+                title: "Atenção",
+                description: "Você precisa confirmar presença em pelo menos uma refeição para gerar o QR code.",
+                variant: "default"
+              })
+            }
           >
             <QrCode 
               size={48} 
-              className={hasConfirmedMeal ? "text-amber-400" : "text-gray-700"} 
+              className={hasConfirmedMeal ? "text-amber-400" : "text-gray-400"} 
             />
           </div>
         </div>
@@ -364,6 +394,7 @@ const Dashboard = () => {
           onOpenChange={setShowQRCode}
           studentId={userId}
           date={format(selectedDate, 'yyyy-MM-dd')}
+          attendance={mealAttendance}
         />
       )}
     </div>

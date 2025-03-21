@@ -6,6 +6,7 @@ import PasswordInput from '../components/auth/PasswordInput';
 import { IdCard } from 'lucide-react';
 import StatusBar from '../components/StatusBar';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -27,21 +28,53 @@ const Login = () => {
     
     setLoading(true);
     
-    // Simulando uma autenticação
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Simulação de login bem-sucedido para aluno
-      if (matricula.length >= 5 && password.length >= 6) {
+    try {
+      // Verificar se é um login simulado para desenvolvimento
+      if (matricula === 'aluno' && password === 'aluno123') {
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo de volta ao Vamos Merendar!",
         });
         navigate('/aluno/dashboard');
-      } else {
-        setError('Matrícula/SIAPE ou senha inválidos.');
+        return;
       }
-    }, 1000);
+      
+      // Tentar autenticar com Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: `${matricula}@example.com`,
+        password: password,
+      });
+      
+      if (error) throw error;
+      
+      // Obter o tipo de usuário
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('user_type, name')
+        .eq('user_id', data.user.id)
+        .single();
+      
+      toast({
+        title: "Login bem-sucedido",
+        description: `Bem-vindo de volta, ${profileData?.name || 'Usuário'}!`,
+      });
+      
+      // Redirecionar com base no tipo de usuário
+      if (profileData?.user_type === 'aluno') {
+        navigate('/aluno/dashboard');
+      } else if (profileData?.user_type === 'professor') {
+        navigate('/professor/dashboard');
+      } else if (profileData?.user_type === 'nutricionista') {
+        navigate('/nutricionista/dashboard');
+      } else {
+        navigate('/aluno/dashboard'); // Fallback
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError('Matrícula/SIAPE ou senha inválidos.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRoleSelection = (role: string) => {

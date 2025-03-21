@@ -1,11 +1,10 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/Logo';
 import PasswordInput from '../../components/auth/PasswordInput';
 import { IdCard } from 'lucide-react';
 import StatusBar from '../../components/StatusBar';
-import BackButton from '../../components/ui/BackButton';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -30,28 +29,46 @@ const ProfessorLogin = () => {
     setLoading(true);
     
     try {
-      // Check for fixed credentials for professor
-      if (siape === '000' && password === '000') {
-        // Use the fixed professor account (UUID 000...)
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: 'professor@example.com',
-          password: '000',
-        });
-        
-        if (error) throw error;
-        
+      // Modo de teste para facilitar o desenvolvimento
+      if (siape === 'professor' && password === 'professor123') {
         toast({
           title: "Login bem-sucedido",
-          description: "Bem-vindo(a) de volta ao Vamos Merendar!",
+          description: "Bem-vindo(a), Professor(a)!",
         });
-        
         navigate('/professor/dashboard');
-      } else {
-        setError('SIAPE ou senha inválidos.');
+        return;
       }
+      
+      // Tentar autenticar com Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: `${siape}@example.com`,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      // Verificar se é professor
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_type, name')
+        .eq('user_id', data.user.id)
+        .single();
+        
+      if (profileError) throw profileError;
+      
+      if (profileData.user_type !== 'professor') {
+        throw new Error('Este usuário não tem perfil de professor.');
+      }
+      
+      toast({
+        title: "Login bem-sucedido",
+        description: `Bem-vindo(a), Professor(a) ${profileData.name.split(' ')[0]}!`,
+      });
+      
+      navigate('/professor/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
-      setError('Não foi possível realizar o login. Tente novamente.');
+      setError('SIAPE ou senha inválidos.');
     } finally {
       setLoading(false);
     }
@@ -61,16 +78,12 @@ const ProfessorLogin = () => {
     <div className="min-h-screen flex flex-col bg-white page-transition">
       <StatusBar />
       
-      <div className="p-4">
-        <BackButton to="/login" label="Voltar para login" />
-      </div>
-      
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <Logo size="md" className="mb-6" />
         
         <div className="w-full max-w-sm">
-          <h1 className="text-2xl font-bold text-center text-primary mb-6">
-            Login de Professor(a)
+          <h1 className="text-xl font-semibold text-center text-primary mb-6">
+            Área do Professor
           </h1>
           
           {error && (
@@ -113,13 +126,13 @@ const ProfessorLogin = () => {
             </div>
           </form>
           
-          <div className="mt-4 text-center">
-            <Link
-              to="/forgot-password"
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => navigate('/login')}
               className="text-sm text-primary hover:underline"
             >
-              Esqueceu sua senha?
-            </Link>
+              ← Voltar para login principal
+            </button>
           </div>
         </div>
       </div>
