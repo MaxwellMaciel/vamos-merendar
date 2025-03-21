@@ -1,13 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
 import MealCard from '../../components/meals/MealCard';
-import { Calendar, Utensils, QrCode, Settings } from 'lucide-react';
+import { Calendar, Utensils, QrCode, MessageSquare, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import FeedbackDialog from '@/components/feedback/FeedbackDialog';
+import MealQRCode from '@/components/qrcode/MealQRCode';
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -17,34 +20,142 @@ const Dashboard = () => {
     lunch: null as boolean | null,
     snack: null as boolean | null,
   });
-  const [remainingMeals, setRemainingMeals] = useState(5);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [hasConfirmedMeal, setHasConfirmedMeal] = useState(false);
+
+  useEffect(() => {
+    // Get the current user
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        setUserId(data.user.id);
+        fetchAttendance(data.user.id, selectedDate);
+      }
+    };
+    
+    fetchUser();
+  }, []);
+
+  const fetchAttendance = async (userId: string, date: Date) => {
+    try {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase
+        .from('meal_attendance')
+        .select('*')
+        .eq('student_id', userId)
+        .eq('date', formattedDate)
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      if (data) {
+        setMealAttendance({
+          breakfast: data.breakfast,
+          lunch: data.lunch,
+          snack: data.snack,
+        });
+        
+        // Check if at least one meal is confirmed
+        setHasConfirmedMeal(data.breakfast === true || data.lunch === true || data.snack === true);
+      } else {
+        // Reset if no data
+        setMealAttendance({
+          breakfast: null,
+          lunch: null,
+          snack: null,
+        });
+        setHasConfirmedMeal(false);
+      }
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    }
+  };
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-    // Reset attendance when date changes
-    setMealAttendance({
-      breakfast: null,
-      lunch: null,
-      snack: null,
-    });
+    if (userId) {
+      fetchAttendance(userId, date);
+    } else {
+      // Reset attendance when date changes if no user
+      setMealAttendance({
+        breakfast: null,
+        lunch: null,
+        snack: null,
+      });
+      setHasConfirmedMeal(false);
+    }
   };
 
-  const handleAttendance = (meal: 'breakfast' | 'lunch' | 'snack', attend: boolean) => {
-    setMealAttendance(prev => ({
-      ...prev,
-      [meal]: attend,
-    }));
+  const handleAttendance = async (meal: 'breakfast' | 'lunch' | 'snack', attend: boolean) => {
+    if (!userId) return;
     
-    if (attend) {
+    try {
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      
+      // Update the local state
+      setMealAttendance(prev => ({
+        ...prev,
+        [meal]: attend,
+      }));
+      
+      const newAttendance = {
+        ...mealAttendance,
+        [meal]: attend,
+      };
+      
+      // Check if there's already an attendance record for this date
+      const { data, error: fetchError } = await supabase
+        .from('meal_attendance')
+        .select('*')
+        .eq('student_id', userId)
+        .eq('date', formattedDate)
+        .maybeSingle();
+      
+      if (fetchError) throw fetchError;
+      
+      if (data) {
+        // Update existing record
+        const { error } = await supabase
+          .from('meal_attendance')
+          .update({
+            [meal]: attend,
+          })
+          .eq('id', data.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('meal_attendance')
+          .insert({
+            student_id: userId,
+            date: formattedDate,
+            [meal]: attend,
+          });
+        
+        if (error) throw error;
+      }
+      
       toast({
-        title: "Presença confirmada",
-        description: `Sua presença foi confirmada para ${getMealName(meal)}.`,
+        title: attend ? "Presença confirmada" : "Ausência registrada",
+        description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
       });
-      setRemainingMeals(prev => Math.max(0, prev - 1));
-    } else {
+      
+      // Update the hasConfirmedMeal state
+      setHasConfirmedMeal(
+        newAttendance.breakfast === true || 
+        newAttendance.lunch === true || 
+        newAttendance.snack === true
+      );
+    } catch (error) {
+      console.error('Error updating attendance:', error);
       toast({
-        title: "Ausência registrada",
-        description: `Sua ausência foi registrada para ${getMealName(meal)}.`,
+        title: "Erro",
+        description: "Não foi possível atualizar sua presença.",
+        variant: "destructive",
       });
     }
   };
@@ -218,20 +329,43 @@ const Dashboard = () => {
         </div>
         
         <div className="flex flex-col gap-4 w-1/3">
-          <div className="bg-secondary rounded-xl p-4 text-white text-center flex flex-col items-center justify-center">
-            <div className="font-bold text-2xl mb-1">
-              {remainingMeals}
-            </div>
+          <div 
+            className="bg-secondary rounded-xl p-4 text-white text-center flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/90 transition-colors"
+            onClick={() => setShowFeedbackDialog(true)}
+          >
+            <MessageSquare size={24} className="mb-1" />
             <div className="text-sm">
-              Restam<br />Refeições
+              Comentários<br />& Sugestões
             </div>
           </div>
           
-          <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-center">
-            <QrCode size={48} className="text-gray-700" />
+          <div 
+            className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => hasConfirmedMeal ? setShowQRCode(true) : null}
+          >
+            <QrCode 
+              size={48} 
+              className={hasConfirmedMeal ? "text-amber-400" : "text-gray-700"} 
+            />
           </div>
         </div>
       </div>
+      
+      {/* Feedback Dialog */}
+      <FeedbackDialog 
+        open={showFeedbackDialog} 
+        onOpenChange={setShowFeedbackDialog} 
+      />
+      
+      {/* QR Code Dialog */}
+      {userId && (
+        <MealQRCode 
+          open={showQRCode} 
+          onOpenChange={setShowQRCode}
+          studentId={userId}
+          date={format(selectedDate, 'yyyy-MM-dd')}
+        />
+      )}
     </div>
   );
 };

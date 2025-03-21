@@ -16,6 +16,7 @@ import AlunoDashboard from "./pages/aluno/Dashboard";
 import ProfessorDashboard from "./pages/professor/Dashboard";
 import NutricionistaDashboard from "./pages/nutricionista/Dashboard";
 import NutricionistaWeeklyMenu from "./pages/nutricionista/WeeklyMenu";
+import NutricionistaFeedback from "./pages/nutricionista/Feedback";
 import Settings from "./pages/Settings";
 import ChangePassword from "./pages/settings/ChangePassword";
 import PersonalInfo from "./pages/settings/PersonalInfo";
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/professor/dashboard" element={<ProfessorDashboard />} />
           <Route path="/nutricionista/dashboard" element={<NutricionistaDashboard />} />
           <Route path="/nutricionista/menu" element={<NutricionistaWeeklyMenu />} />
+          <Route path="/nutricionista/feedback" element={<NutricionistaFeedback />} />
           
           {/* Settings routes */}
           <Route path="/settings" element={<Settings />} />

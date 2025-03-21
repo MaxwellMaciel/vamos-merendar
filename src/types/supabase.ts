@@ -1,0 +1,41 @@
+
+// Types for Supabase entities
+export interface Profile {
+  id: string;
+  user_id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  profile_image: string | null;
+  user_type: 'aluno' | 'professor' | 'nutricionista';
+  created_at: string;
+}
+
+export interface MealAttendance {
+  id: string;
+  student_id: string;
+  date: string;
+  breakfast: boolean | null;
+  lunch: boolean | null;
+  snack: boolean | null;
+  created_at: string;
+}
+
+export interface DailyMenu {
+  id: string;
+  date: string;
+  breakfast: string | null;
+  lunch: string | null;
+  snack: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface Feedback {
+  id: string;
+  student_id: string;
+  feedback_type: 'comment' | 'suggestion';
+  meal_type: 'breakfast' | 'lunch' | 'snack';
+  content: string;
+  created_at: string;
+}

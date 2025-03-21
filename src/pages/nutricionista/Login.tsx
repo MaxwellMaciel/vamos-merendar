@@ -7,6 +7,7 @@ import { IdCard } from 'lucide-react';
 import StatusBar from '../../components/StatusBar';
 import BackButton from '../../components/ui/BackButton';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const NutricionistaLogin = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const NutricionistaLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -28,21 +29,32 @@ const NutricionistaLogin = () => {
     
     setLoading(true);
     
-    // Simulando uma autenticação para nutricionista
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Credenciais fixas para nutricionista
-      if (siape === '12345' && password === 'Nutricionista@123') {
+    try {
+      // Check for fixed credentials for nutritionist
+      if (siape === '111' && password === '111') {
+        // Use the fixed nutritionist account (UUID 111...)
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: 'nutricionista@example.com',
+          password: '111',
+        });
+        
+        if (error) throw error;
+        
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo(a) de volta ao Vamos Merendar!",
         });
+        
         navigate('/nutricionista/dashboard');
       } else {
         setError('SIAPE ou senha inválidos.');
       }
-    }, 1000);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError('Não foi possível realizar o login. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -4,9 +4,12 @@ import { Check, X } from 'lucide-react';
 
 interface PasswordRequirementsProps {
   password: string;
+  show: boolean;
 }
 
-const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({ password }) => {
+const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({ password, show }) => {
+  if (!show) return null;
+  
   const hasMinLength = password.length >= 8;
   const hasUpperCase = /[A-Z]/.test(password);
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);

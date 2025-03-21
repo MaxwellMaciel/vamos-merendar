@@ -7,6 +7,7 @@ import { IdCard } from 'lucide-react';
 import StatusBar from '../../components/StatusBar';
 import BackButton from '../../components/ui/BackButton';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const ProfessorLogin = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const ProfessorLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -28,21 +29,32 @@ const ProfessorLogin = () => {
     
     setLoading(true);
     
-    // Simulando uma autenticação para professor
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Credenciais fixas para professor
-      if (siape === '54321' && password === 'Professor@123') {
+    try {
+      // Check for fixed credentials for professor
+      if (siape === '000' && password === '000') {
+        // Use the fixed professor account (UUID 000...)
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: 'professor@example.com',
+          password: '000',
+        });
+        
+        if (error) throw error;
+        
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo(a) de volta ao Vamos Merendar!",
         });
+        
         navigate('/professor/dashboard');
       } else {
         setError('SIAPE ou senha inválidos.');
       }
-    }, 1000);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError('Não foi possível realizar o login. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

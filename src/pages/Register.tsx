@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../components/ui/BackButton';
 import PasswordInput from '../components/auth/PasswordInput';
@@ -9,6 +8,7 @@ import { Mail, User, Calendar, IdCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from '@/components/ui/checkbox';
+import { supabase } from '@/integrations/supabase/client';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -23,6 +23,20 @@ const Register = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+
+  useEffect(() => {
+    if (password) {
+      const hasMinLength = password.length >= 8;
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      
+      setShowPasswordRequirements(!(hasMinLength && hasUpperCase && (hasSpecialChar || hasNumber)));
+    } else {
+      setShowPasswordRequirements(false);
+    }
+  }, [password]);
 
   const validatePassword = () => {
     const hasMinLength = password.length >= 8;
@@ -33,7 +47,7 @@ const Register = () => {
     return hasMinLength && hasUpperCase && (hasSpecialChar || hasNumber);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -59,15 +73,45 @@ const Register = () => {
     
     setLoading(true);
     
-    // Simulando um registro
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            matricula,
+            name,
+            dob
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        const { error: profileError } = await supabase.from('profiles').insert({
+          id: data.user.id,
+          user_id: data.user.id,
+          name,
+          email,
+          user_type: 'aluno'
+        });
+        
+        if (profileError) throw profileError;
+      }
+      
       toast({
         title: "Conta criada com sucesso!",
         description: "Bem-vindo ao Vamos Merendar!",
       });
+      
       navigate('/registration-success');
-    }, 1000);
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      setError(error.message || 'Ocorreu um erro durante o cadastro.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -167,7 +211,7 @@ const Register = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
             
-            <PasswordRequirements password={password} />
+            <PasswordRequirements password={password} show={showPasswordRequirements} />
             
             <div className="flex items-center space-x-2">
               <Checkbox 

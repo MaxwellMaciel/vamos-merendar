@@ -9,7 +9,126 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      daily_menu: {
+        Row: {
+          breakfast: string | null
+          created_at: string | null
+          created_by: string
+          date: string
+          id: string
+          lunch: string | null
+          snack: string | null
+        }
+        Insert: {
+          breakfast?: string | null
+          created_at?: string | null
+          created_by: string
+          date: string
+          id?: string
+          lunch?: string | null
+          snack?: string | null
+        }
+        Update: {
+          breakfast?: string | null
+          created_at?: string | null
+          created_by?: string
+          date?: string
+          id?: string
+          lunch?: string | null
+          snack?: string | null
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          content: string
+          created_at: string | null
+          feedback_type: string
+          id: string
+          meal_type: string
+          student_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          feedback_type: string
+          id?: string
+          meal_type: string
+          student_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          feedback_type?: string
+          id?: string
+          meal_type?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
+      meal_attendance: {
+        Row: {
+          breakfast: boolean | null
+          created_at: string | null
+          date: string
+          id: string
+          lunch: boolean | null
+          snack: boolean | null
+          student_id: string
+        }
+        Insert: {
+          breakfast?: boolean | null
+          created_at?: string | null
+          date: string
+          id?: string
+          lunch?: boolean | null
+          snack?: boolean | null
+          student_id: string
+        }
+        Update: {
+          breakfast?: boolean | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          lunch?: boolean | null
+          snack?: boolean | null
+          student_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          profile_image: string | null
+          user_id: string | null
+          user_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          name: string
+          phone?: string | null
+          profile_image?: string | null
+          user_id?: string | null
+          user_type?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          profile_image?: string | null
+          user_id?: string | null
+          user_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

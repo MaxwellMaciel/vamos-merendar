@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
-import { Calendar, Utensils, PieChart, Edit, Settings } from 'lucide-react';
+import { Calendar, Utensils, PieChart, Edit, MessageSquare, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -125,13 +125,21 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="mx-6 mb-6">
+      <div className="mx-6 mb-3">
         <Link 
           to="/nutricionista/menu" 
-          className="btn-primary w-full flex items-center justify-center"
+          className="btn-primary w-full flex items-center justify-center mb-3"
         >
           <Utensils size={18} className="mr-2" />
           <span>Gerenciar Cardápio Semanal</span>
+        </Link>
+        
+        <Link 
+          to="/nutricionista/feedback" 
+          className="btn-secondary w-full flex items-center justify-center"
+        >
+          <MessageSquare size={18} className="mr-2" />
+          <span>Ver Comentários e Sugestões</span>
         </Link>
       </div>
     </div>
