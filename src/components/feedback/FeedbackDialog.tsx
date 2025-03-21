@@ -1,117 +1,92 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, LightbulbIcon } from 'lucide-react';
-import { supabase } from "@/integrations/supabase/client";
-import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FeedbackDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  attendance?: {
+    breakfast: boolean | null;
+    lunch: boolean | null;
+    snack: boolean | null;
+  };
 }
 
-const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onOpenChange }) => {
+const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ 
+  open, 
+  onOpenChange,
+  attendance = { breakfast: null, lunch: null, snack: null } 
+}) => {
   const { toast } = useToast();
-  const [feedbackType, setFeedbackType] = useState<'comment' | 'suggestion'>('comment');
-  const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'snack'>('lunch');
-  const [content, setContent] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [selectedMeal, setSelectedMeal] = useState('breakfast');
+  const [feedbackType, setFeedbackType] = useState('comment');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [availableMeals, setAvailableMeals] = useState<{
-    breakfast: boolean;
-    lunch: boolean;
-    snack: boolean;
-  }>({
-    breakfast: false,
-    lunch: false,
-    snack: false
-  });
 
-  useEffect(() => {
-    // Ao abrir o diálogo, verificar as refeições em que o aluno esteve presente hoje
-    if (open) {
-      fetchAttendance();
-    }
-  }, [open]);
-
-  const fetchAttendance = async () => {
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) return;
-
-      const today = format(new Date(), 'yyyy-MM-dd');
-      
-      const { data, error } = await supabase
-        .from('meal_attendance')
-        .select('breakfast, lunch, snack')
-        .eq('student_id', user.id)
-        .eq('date', today)
-        .maybeSingle();
-      
-      if (error) throw error;
-      
-      if (data) {
-        setAvailableMeals({
-          breakfast: data.breakfast === true,
-          lunch: data.lunch === true,
-          snack: data.snack === true
-        });
-        
-        // Define a refeição inicial selecionável com base na presença
-        if (data.lunch === true) setMealType('lunch');
-        else if (data.breakfast === true) setMealType('breakfast');
-        else if (data.snack === true) setMealType('snack');
-      }
-    } catch (error) {
-      console.error('Error fetching attendance:', error);
-    }
+  // Function to get the first confirmed meal for default tab
+  const getDefaultMeal = () => {
+    if (attendance.breakfast === true) return 'breakfast';
+    if (attendance.lunch === true) return 'lunch';
+    if (attendance.snack === true) return 'snack';
+    return 'breakfast'; // Fallback
   };
 
   const handleSubmit = async () => {
-    if (!content.trim()) {
+    if (!feedback) {
       toast({
-        title: "Erro",
-        description: "Por favor, escreva algum conteúdo antes de enviar.",
+        title: "Feedback vazio",
+        description: "Por favor, escreva seu feedback antes de enviar.",
         variant: "destructive",
       });
       return;
     }
 
-    // Verificar se o usuário esteve presente na refeição
-    if (!availableMeals[mealType]) {
+    // Make sure the user confirmed attendance for this meal
+    if (attendance[selectedMeal as keyof typeof attendance] !== true) {
       toast({
-        title: "Erro",
-        description: "Você só pode comentar sobre refeições em que esteve presente.",
+        title: "Atenção",
+        description: "Você só pode enviar feedback para refeições que confirmou presença.",
         variant: "destructive",
       });
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData || !userData.user) {
+        throw new Error('Usuário não autenticado.');
+      }
+
       const { error } = await supabase.from('feedback').insert({
-        student_id: (await supabase.auth.getUser()).data.user?.id,
+        student_id: userData.user.id,
+        meal_type: selectedMeal,
         feedback_type: feedbackType,
-        meal_type: mealType,
-        content
+        content: feedback
       });
 
       if (error) throw error;
 
       toast({
-        title: feedbackType === 'comment' ? "Comentário enviado" : "Sugestão enviada",
-        description: "Agradecemos pelo seu feedback!",
+        title: "Feedback enviado",
+        description: "Obrigado por compartilhar sua opinião!",
       });
-      
-      setContent('');
+
+      setFeedback('');
       onOpenChange(false);
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
-        title: "Erro ao enviar",
-        description: "Não foi possível enviar seu feedback. Tente novamente.",
+        title: "Erro",
+        description: "Não foi possível enviar seu feedback. Tente novamente mais tarde.",
         variant: "destructive",
       });
     } finally {
@@ -119,146 +94,81 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onOpenChange }) =
     }
   };
 
-  const getMealLabel = (type: string) => {
-    switch (type) {
-      case 'breakfast': return 'Café da Manhã';
-      case 'lunch': return 'Almoço';
-      case 'snack': return 'Lanche da Tarde';
-      default: return '';
-    }
-  };
-
-  const noAvailableMeals = !availableMeals.breakfast && !availableMeals.lunch && !availableMeals.snack;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-primary">
-            {feedbackType === 'comment' ? 'Deixe seu comentário' : 'Faça uma sugestão'}
-          </DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-primary">Deixe seu comentário</DialogTitle>
         </DialogHeader>
         
-        {noAvailableMeals ? (
-          <div className="p-6 text-center">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-              <p className="text-amber-600">Você precisa confirmar presença em alguma refeição hoje para poder deixar um comentário.</p>
-            </div>
-            <DialogClose className="px-4 py-2 bg-gray-100 hover:bg-gray-200 transition-colors rounded-md">
-              Entendi
-            </DialogClose>
-          </div>
-        ) : (
-          <>
-            <Tabs defaultValue="comment" onValueChange={(value) => setFeedbackType(value as 'comment' | 'suggestion')}>
-              <TabsList className="grid w-full grid-cols-2 rounded-md overflow-hidden">
-                <TabsTrigger value="comment" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary data-[state=active]:text-white">
-                  <MessageSquare size={16} />
-                  <span>Comentário</span>
-                </TabsTrigger>
-                <TabsTrigger value="suggestion" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary data-[state=active]:text-white">
-                  <LightbulbIcon size={16} />
-                  <span>Sugestão</span>
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="comment" className="pt-4">
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="meal-type" className="block text-sm font-medium mb-2 text-gray-700">
-                      Sobre qual refeição você gostaria de comentar?
-                    </label>
-                    <select
-                      id="meal-type"
-                      value={mealType}
-                      onChange={(e) => setMealType(e.target.value as 'breakfast' | 'lunch' | 'snack')}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      disabled={noAvailableMeals}
-                    >
-                      <option value="breakfast" disabled={!availableMeals.breakfast}>
-                        Café da Manhã {!availableMeals.breakfast && '(Sem presença confirmada)'}
-                      </option>
-                      <option value="lunch" disabled={!availableMeals.lunch}>
-                        Almoço {!availableMeals.lunch && '(Sem presença confirmada)'}
-                      </option>
-                      <option value="snack" disabled={!availableMeals.snack}>
-                        Lanche da Tarde {!availableMeals.snack && '(Sem presença confirmada)'}
-                      </option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="comment-content" className="block text-sm font-medium mb-2 text-gray-700">
-                      Seu comentário:
-                    </label>
-                    <textarea
-                      id="comment-content"
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      rows={4}
-                      placeholder="O que você achou da refeição? Como podemos melhorar?"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="suggestion" className="pt-4">
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="suggestion-meal-type" className="block text-sm font-medium mb-2 text-gray-700">
-                      Para qual refeição é sua sugestão?
-                    </label>
-                    <select
-                      id="suggestion-meal-type"
-                      value={mealType}
-                      onChange={(e) => setMealType(e.target.value as 'breakfast' | 'lunch' | 'snack')}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      disabled={noAvailableMeals}
-                    >
-                      <option value="breakfast" disabled={!availableMeals.breakfast}>
-                        Café da Manhã {!availableMeals.breakfast && '(Sem presença confirmada)'}
-                      </option>
-                      <option value="lunch" disabled={!availableMeals.lunch}>
-                        Almoço {!availableMeals.lunch && '(Sem presença confirmada)'}
-                      </option>
-                      <option value="snack" disabled={!availableMeals.snack}>
-                        Lanche da Tarde {!availableMeals.snack && '(Sem presença confirmada)'}
-                      </option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="suggestion-content" className="block text-sm font-medium mb-2 text-gray-700">
-                      Sua sugestão de prato:
-                    </label>
-                    <textarea
-                      id="suggestion-content"
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      rows={4}
-                      placeholder="Qual prato você gostaria de sugerir para o cardápio?"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-            
-            <div className="flex justify-end gap-3 mt-4">
-              <DialogClose className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                Cancelar
-              </DialogClose>
-              <button 
-                onClick={handleSubmit}
-                disabled={isSubmitting || noAvailableMeals}
-                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+        <Tabs defaultValue={getDefaultMeal()} onValueChange={setSelectedMeal}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger 
+              value="breakfast" 
+              className="flex items-center gap-2"
+              disabled={attendance.breakfast !== true}
+            >
+              <Coffee size={16} />
+              <span>Café</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="lunch" 
+              className="flex items-center gap-2"
+              disabled={attendance.lunch !== true}
+            >
+              <UtensilsCrossed size={16} />
+              <span>Almoço</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="snack" 
+              className="flex items-center gap-2"
+              disabled={attendance.snack !== true}
+            >
+              <Cookie size={16} />
+              <span>Lanche</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <div className="bg-gray-50 rounded-lg p-3 mt-3 mb-3">
+            <div className="text-sm text-gray-700 font-medium mb-2">Tipo de feedback:</div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                type="button"
+                variant={feedbackType === 'comment' ? 'default' : 'outline'}
+                className="rounded-full"
+                onClick={() => setFeedbackType('comment')}
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar'}
-              </button>
+                Comentário
+              </Button>
+              <Button 
+                type="button"
+                variant={feedbackType === 'suggestion' ? 'default' : 'outline'}
+                className="rounded-full"
+                onClick={() => setFeedbackType('suggestion')}
+              >
+                Sugestão
+              </Button>
             </div>
-          </>
-        )}
+          </div>
+          
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Escreva seu feedback aqui..."
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              className="min-h-[120px] rounded-lg border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+            
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? "Enviando..." : "Enviar Feedback"}
+            </Button>
+          </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

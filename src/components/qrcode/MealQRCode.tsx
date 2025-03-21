@@ -36,15 +36,23 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
     return JSON.stringify(qrData);
   };
 
-  // Determinar a aba inicial baseada na presença confirmada
+  // Determine the initial tab based on confirmed attendance
   const getDefaultTab = () => {
-    if (attendance.lunch === true) return 'lunch';
     if (attendance.breakfast === true) return 'breakfast';
+    if (attendance.lunch === true) return 'lunch';
     if (attendance.snack === true) return 'snack';
     return 'breakfast'; // Fallback
   };
 
-  const defaultTab = getDefaultTab();
+  // Check if any meal is confirmed
+  const hasConfirmedMeal = 
+    attendance.breakfast === true || 
+    attendance.lunch === true || 
+    attendance.snack === true;
+
+  if (!hasConfirmedMeal) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,7 +61,7 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
           <DialogTitle className="text-xl font-semibold text-primary">QR Code da Refeição</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue={defaultTab}>
+        <Tabs defaultValue={getDefaultTab()}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger 
               value="breakfast" 

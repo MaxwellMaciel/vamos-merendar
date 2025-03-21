@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [hasConfirmedMeal, setHasConfirmedMeal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Get the current user
@@ -45,13 +46,29 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('name')
-        .eq('user_id', userId)
+        .eq('id', userId)
         .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile by id:', error);
+        // Try with user_id if id doesn't work
+        const { data: userIdData, error: userIdError } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('user_id', userId)
+          .maybeSingle();
+          
+        if (userIdError) throw userIdError;
+        if (userIdData?.name) {
+          // Extract first name
+          const firstName = userIdData.name.split(' ')[0];
+          setUserName(firstName);
+        }
+        return;
+      }
       
       if (data?.name) {
-        // Extrair o primeiro nome
+        // Extract first name
         const firstName = data.name.split(' ')[0];
         setUserName(firstName);
       }
@@ -115,18 +132,16 @@ const Dashboard = () => {
     if (!userId) return;
     
     try {
+      setIsLoading(true);
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       
-      // Update the local state
-      setMealAttendance(prev => ({
-        ...prev,
-        [meal]: attend,
-      }));
-      
+      // Update the local state immediately for better UX
       const newAttendance = {
         ...mealAttendance,
         [meal]: attend,
       };
+      
+      setMealAttendance(newAttendance);
       
       // Check if there's already an attendance record for this date
       const { data, error: fetchError } = await supabase
@@ -161,6 +176,9 @@ const Dashboard = () => {
         if (error) throw error;
       }
       
+      // Force refetch to ensure data consistency
+      fetchAttendance(userId, selectedDate);
+      
       toast({
         title: attend ? "Presença confirmada" : "Ausência registrada",
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
@@ -179,6 +197,11 @@ const Dashboard = () => {
         description: "Não foi possível atualizar sua presença.",
         variant: "destructive",
       });
+      
+      // Revert the local state in case of error
+      fetchAttendance(userId, selectedDate);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -248,6 +271,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleAttendance('breakfast', true)}
+                disabled={isLoading}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.breakfast === true
                     ? 'bg-red-500 text-white'
@@ -259,6 +283,7 @@ const Dashboard = () => {
               
               <button
                 onClick={() => handleAttendance('breakfast', false)}
+                disabled={isLoading}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.breakfast === false
                     ? 'bg-accent text-primary'
@@ -275,6 +300,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleAttendance('lunch', true)}
+                disabled={isLoading}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.lunch === true
                     ? 'bg-red-500 text-white'
@@ -286,6 +312,7 @@ const Dashboard = () => {
               
               <button
                 onClick={() => handleAttendance('lunch', false)}
+                disabled={isLoading}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.lunch === false
                     ? 'bg-accent text-primary'
@@ -302,6 +329,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleAttendance('snack', true)}
+                disabled={isLoading}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.snack === true
                     ? 'bg-red-500 text-white'
@@ -313,6 +341,7 @@ const Dashboard = () => {
               
               <button
                 onClick={() => handleAttendance('snack', false)}
+                disabled={isLoading}
                 className={`py-2 rounded-md font-medium transition-all ${
                   mealAttendance.snack === false
                     ? 'bg-accent text-primary'
@@ -355,7 +384,17 @@ const Dashboard = () => {
         <div className="flex flex-col gap-4 w-1/3">
           <div 
             className="bg-secondary rounded-xl p-4 text-white text-center flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/90 transition-colors shadow-sm"
-            onClick={() => setShowFeedbackDialog(true)}
+            onClick={() => {
+              if (hasConfirmedMeal) {
+                setShowFeedbackDialog(true);
+              } else {
+                toast({
+                  title: "Atenção",
+                  description: "Você precisa confirmar presença em pelo menos uma refeição para enviar feedback.",
+                  variant: "default"
+                });
+              }
+            }}
           >
             <MessageSquare size={24} className="mb-1" />
             <div className="text-sm">
@@ -365,13 +404,17 @@ const Dashboard = () => {
           
           <div 
             className={`${hasConfirmedMeal ? 'bg-white border border-gray-200 hover:bg-gray-50' : 'bg-gray-100 border border-gray-200'} rounded-xl p-4 flex items-center justify-center cursor-pointer transition-colors shadow-sm`}
-            onClick={() => hasConfirmedMeal ? setShowQRCode(true) : 
-              toast({
-                title: "Atenção",
-                description: "Você precisa confirmar presença em pelo menos uma refeição para gerar o QR code.",
-                variant: "default"
-              })
-            }
+            onClick={() => {
+              if (hasConfirmedMeal) {
+                setShowQRCode(true);
+              } else {
+                toast({
+                  title: "Atenção",
+                  description: "Você precisa confirmar presença em pelo menos uma refeição para gerar o QR code.",
+                  variant: "default"
+                });
+              }
+            }}
           >
             <QrCode 
               size={48} 
@@ -384,7 +427,8 @@ const Dashboard = () => {
       {/* Feedback Dialog */}
       <FeedbackDialog 
         open={showFeedbackDialog} 
-        onOpenChange={setShowFeedbackDialog} 
+        onOpenChange={setShowFeedbackDialog}
+        attendance={mealAttendance}
       />
       
       {/* QR Code Dialog */}
