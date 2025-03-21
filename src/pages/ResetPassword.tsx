@@ -15,6 +15,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
   const validatePassword = () => {
     const hasMinLength = password.length >= 8;
@@ -104,7 +105,10 @@ const ResetPassword = () => {
               id="password"
               placeholder="Senha"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setShowPasswordRequirements(true);
+              }}
             />
             
             <PasswordInput
@@ -114,7 +118,7 @@ const ResetPassword = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
             
-            <PasswordRequirements password={password} />
+            <PasswordRequirements password={password} show={showPasswordRequirements} />
             
             <div className="pt-4">
               <button

@@ -34,8 +34,8 @@ export interface DailyMenu {
 export interface Feedback {
   id: string;
   student_id: string;
-  feedback_type: 'comment' | 'suggestion';
-  meal_type: 'breakfast' | 'lunch' | 'snack';
+  feedback_type: string; // Changed from 'comment' | 'suggestion' to string to match Supabase
+  meal_type: string; // Changed from 'breakfast' | 'lunch' | 'snack' to string to match Supabase
   content: string;
   created_at: string;
 }

@@ -26,7 +26,8 @@ const FeedbackReview = () => {
         
         if (error) throw error;
         
-        setFeedback(data || []);
+        // Type casting to ensure compatibility with our Feedback type
+        setFeedback(data as Feedback[] || []);
       } catch (error) {
         console.error('Error fetching feedback:', error);
       } finally {
