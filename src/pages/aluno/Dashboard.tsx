@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, isSameDay, isAfter, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
@@ -16,16 +16,24 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [mealAttendance, setMealAttendance] = useState({
+    id: '',
     breakfast: null as boolean | null,
     lunch: null as boolean | null,
     snack: null as boolean | null,
   });
   const [showQRCode, setShowQRCode] = useState(false);
+  const [activeMealType, setActiveMealType] = useState<'breakfast' | 'lunch' | 'snack' | null>(null);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [hasConfirmedMeal, setHasConfirmedMeal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCurrentDay, setIsCurrentDay] = useState(true);
+
+  useEffect(() => {
+    // Check if selected date is the current day
+    setIsCurrentDay(isSameDay(selectedDate, new Date()));
+  }, [selectedDate]);
 
   useEffect(() => {
     // Get the current user
@@ -46,24 +54,11 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('name')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .maybeSingle();
       
       if (error) {
-        console.error('Error fetching profile by id:', error);
-        // Try with user_id if id doesn't work
-        const { data: userIdData, error: userIdError } = await supabase
-          .from('profiles')
-          .select('name')
-          .eq('user_id', userId)
-          .maybeSingle();
-          
-        if (userIdError) throw userIdError;
-        if (userIdData?.name) {
-          // Extract first name
-          const firstName = userIdData.name.split(' ')[0];
-          setUserName(firstName);
-        }
+        console.error('Error fetching profile by user_id:', error);
         return;
       }
       
@@ -92,6 +87,7 @@ const Dashboard = () => {
       
       if (data) {
         setMealAttendance({
+          id: data.id,
           breakfast: data.breakfast,
           lunch: data.lunch,
           snack: data.snack,
@@ -102,6 +98,7 @@ const Dashboard = () => {
       } else {
         // Reset if no data
         setMealAttendance({
+          id: '',
           breakfast: null,
           lunch: null,
           snack: null,
@@ -120,6 +117,7 @@ const Dashboard = () => {
     } else {
       // Reset attendance when date changes if no user
       setMealAttendance({
+        id: '',
         breakfast: null,
         lunch: null,
         snack: null,
@@ -129,7 +127,7 @@ const Dashboard = () => {
   };
 
   const handleAttendance = async (meal: 'breakfast' | 'lunch' | 'snack', attend: boolean) => {
-    if (!userId) return;
+    if (!userId || !isCurrentDay) return;
     
     try {
       setIsLoading(true);
@@ -163,33 +161,42 @@ const Dashboard = () => {
           .eq('id', data.id);
         
         if (error) throw error;
+        
+        // Update the ID in case it wasn't set yet
+        setMealAttendance(prev => ({
+          ...prev,
+          id: data.id
+        }));
       } else {
         // Insert new record
-        const { error } = await supabase
+        const { data: newData, error } = await supabase
           .from('meal_attendance')
           .insert({
             student_id: userId,
             date: formattedDate,
             [meal]: attend,
-          });
+          })
+          .select()
+          .single();
         
         if (error) throw error;
+        
+        // Update the ID with the newly created record ID
+        if (newData) {
+          setMealAttendance(prev => ({
+            ...prev,
+            id: newData.id
+          }));
+        }
       }
-      
-      // Force refetch to ensure data consistency
-      fetchAttendance(userId, selectedDate);
       
       toast({
         title: attend ? "Presença confirmada" : "Ausência registrada",
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
       });
       
-      // Update the hasConfirmedMeal state
-      setHasConfirmedMeal(
-        newAttendance.breakfast === true || 
-        newAttendance.lunch === true || 
-        newAttendance.snack === true
-      );
+      // Refetch to ensure data consistency
+      fetchAttendance(userId, selectedDate);
     } catch (error) {
       console.error('Error updating attendance:', error);
       toast({
@@ -211,6 +218,16 @@ const Dashboard = () => {
       case 'lunch': return "o almoço";
       case 'snack': return "o lanche da tarde";
     }
+  };
+
+  const handleShowQRCode = (mealType: 'breakfast' | 'lunch' | 'snack') => {
+    setActiveMealType(mealType);
+    setShowQRCode(true);
+  };
+
+  const handleShowFeedback = (mealType: 'breakfast' | 'lunch' | 'snack') => {
+    setActiveMealType(mealType);
+    setShowFeedbackDialog(true);
   };
 
   return (
@@ -262,95 +279,218 @@ const Dashboard = () => {
       
       <div className="mx-6 mb-6 card-secondary">
         <h2 className="text-lg font-medium text-white mb-4">
-          Confirme sua presença para as refeições:
+          {isCurrentDay ? "Confirme sua presença para as refeições:" : "Comparecimento:"}
         </h2>
         
         <div className="space-y-4">
           <div className="bg-white/10 rounded-lg p-3">
             <h3 className="text-white font-medium mb-2">Café da Manhã</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => handleAttendance('breakfast', true)}
-                disabled={isLoading}
-                className={`py-2 rounded-md font-medium transition-all ${
-                  mealAttendance.breakfast === true
-                    ? 'bg-red-500 text-white'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                Sim
-              </button>
-              
-              <button
-                onClick={() => handleAttendance('breakfast', false)}
-                disabled={isLoading}
-                className={`py-2 rounded-md font-medium transition-all ${
-                  mealAttendance.breakfast === false
-                    ? 'bg-accent text-primary'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                Não
-              </button>
-            </div>
+            
+            {isCurrentDay ? (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleAttendance('breakfast', true)}
+                  disabled={isLoading}
+                  className={`py-2 rounded-md font-medium transition-all ${
+                    mealAttendance.breakfast === true
+                      ? 'bg-red-500 text-white'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Sim
+                </button>
+                
+                <button
+                  onClick={() => handleAttendance('breakfast', false)}
+                  disabled={isLoading}
+                  className={`py-2 rounded-md font-medium transition-all ${
+                    mealAttendance.breakfast === false
+                      ? 'bg-accent text-primary'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Não
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <div 
+                  className={`w-3 h-3 rounded-full mr-2 ${
+                    mealAttendance.breakfast === true 
+                      ? 'bg-green-500' 
+                      : mealAttendance.breakfast === false 
+                      ? 'bg-red-500' 
+                      : 'bg-gray-300'
+                  }`}
+                />
+                <span className="text-white">
+                  {mealAttendance.breakfast === true 
+                    ? 'Compareceu' 
+                    : mealAttendance.breakfast === false 
+                    ? 'Não compareceu' 
+                    : 'Não registrado'}
+                </span>
+              </div>
+            )}
+            
+            {mealAttendance.breakfast === true && (
+              <div className="mt-3 flex gap-2">
+                <button 
+                  onClick={() => handleShowQRCode('breakfast')}
+                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                >
+                  <QrCode size={16} />
+                  <span>QR Code</span>
+                </button>
+                <button 
+                  onClick={() => handleShowFeedback('breakfast')}
+                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                >
+                  <MessageSquare size={16} />
+                  <span>Comentário</span>
+                </button>
+              </div>
+            )}
           </div>
           
           <div className="bg-white/10 rounded-lg p-3">
             <h3 className="text-white font-medium mb-2">Almoço</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => handleAttendance('lunch', true)}
-                disabled={isLoading}
-                className={`py-2 rounded-md font-medium transition-all ${
-                  mealAttendance.lunch === true
-                    ? 'bg-red-500 text-white'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                Sim
-              </button>
-              
-              <button
-                onClick={() => handleAttendance('lunch', false)}
-                disabled={isLoading}
-                className={`py-2 rounded-md font-medium transition-all ${
-                  mealAttendance.lunch === false
-                    ? 'bg-accent text-primary'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                Não
-              </button>
-            </div>
+            
+            {isCurrentDay ? (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleAttendance('lunch', true)}
+                  disabled={isLoading}
+                  className={`py-2 rounded-md font-medium transition-all ${
+                    mealAttendance.lunch === true
+                      ? 'bg-red-500 text-white'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Sim
+                </button>
+                
+                <button
+                  onClick={() => handleAttendance('lunch', false)}
+                  disabled={isLoading}
+                  className={`py-2 rounded-md font-medium transition-all ${
+                    mealAttendance.lunch === false
+                      ? 'bg-accent text-primary'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Não
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <div 
+                  className={`w-3 h-3 rounded-full mr-2 ${
+                    mealAttendance.lunch === true 
+                      ? 'bg-green-500' 
+                      : mealAttendance.lunch === false 
+                      ? 'bg-red-500' 
+                      : 'bg-gray-300'
+                  }`}
+                />
+                <span className="text-white">
+                  {mealAttendance.lunch === true 
+                    ? 'Compareceu' 
+                    : mealAttendance.lunch === false 
+                    ? 'Não compareceu' 
+                    : 'Não registrado'}
+                </span>
+              </div>
+            )}
+            
+            {mealAttendance.lunch === true && (
+              <div className="mt-3 flex gap-2">
+                <button 
+                  onClick={() => handleShowQRCode('lunch')}
+                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                >
+                  <QrCode size={16} />
+                  <span>QR Code</span>
+                </button>
+                <button 
+                  onClick={() => handleShowFeedback('lunch')}
+                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                >
+                  <MessageSquare size={16} />
+                  <span>Comentário</span>
+                </button>
+              </div>
+            )}
           </div>
           
           <div className="bg-white/10 rounded-lg p-3">
             <h3 className="text-white font-medium mb-2">Lanche da Tarde</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => handleAttendance('snack', true)}
-                disabled={isLoading}
-                className={`py-2 rounded-md font-medium transition-all ${
-                  mealAttendance.snack === true
-                    ? 'bg-red-500 text-white'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                Sim
-              </button>
-              
-              <button
-                onClick={() => handleAttendance('snack', false)}
-                disabled={isLoading}
-                className={`py-2 rounded-md font-medium transition-all ${
-                  mealAttendance.snack === false
-                    ? 'bg-accent text-primary'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                Não
-              </button>
-            </div>
+            
+            {isCurrentDay ? (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleAttendance('snack', true)}
+                  disabled={isLoading}
+                  className={`py-2 rounded-md font-medium transition-all ${
+                    mealAttendance.snack === true
+                      ? 'bg-red-500 text-white'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Sim
+                </button>
+                
+                <button
+                  onClick={() => handleAttendance('snack', false)}
+                  disabled={isLoading}
+                  className={`py-2 rounded-md font-medium transition-all ${
+                    mealAttendance.snack === false
+                      ? 'bg-accent text-primary'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Não
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <div 
+                  className={`w-3 h-3 rounded-full mr-2 ${
+                    mealAttendance.snack === true 
+                      ? 'bg-green-500' 
+                      : mealAttendance.snack === false 
+                      ? 'bg-red-500' 
+                      : 'bg-gray-300'
+                  }`}
+                />
+                <span className="text-white">
+                  {mealAttendance.snack === true 
+                    ? 'Compareceu' 
+                    : mealAttendance.snack === false 
+                    ? 'Não compareceu' 
+                    : 'Não registrado'}
+                </span>
+              </div>
+            )}
+            
+            {mealAttendance.snack === true && (
+              <div className="mt-3 flex gap-2">
+                <button 
+                  onClick={() => handleShowQRCode('snack')}
+                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                >
+                  <QrCode size={16} />
+                  <span>QR Code</span>
+                </button>
+                <button 
+                  onClick={() => handleShowFeedback('snack')}
+                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                >
+                  <MessageSquare size={16} />
+                  <span>Comentário</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -380,65 +520,31 @@ const Dashboard = () => {
             type="dinner"
           />
         </div>
-        
-        <div className="flex flex-col gap-4 w-1/3">
-          <div 
-            className="bg-secondary rounded-xl p-4 text-white text-center flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/90 transition-colors shadow-sm"
-            onClick={() => {
-              if (hasConfirmedMeal) {
-                setShowFeedbackDialog(true);
-              } else {
-                toast({
-                  title: "Atenção",
-                  description: "Você precisa confirmar presença em pelo menos uma refeição para enviar feedback.",
-                  variant: "default"
-                });
-              }
-            }}
-          >
-            <MessageSquare size={24} className="mb-1" />
-            <div className="text-sm">
-              Comentários<br />& Sugestões
-            </div>
-          </div>
-          
-          <div 
-            className={`${hasConfirmedMeal ? 'bg-white border border-gray-200 hover:bg-gray-50' : 'bg-gray-100 border border-gray-200'} rounded-xl p-4 flex items-center justify-center cursor-pointer transition-colors shadow-sm`}
-            onClick={() => {
-              if (hasConfirmedMeal) {
-                setShowQRCode(true);
-              } else {
-                toast({
-                  title: "Atenção",
-                  description: "Você precisa confirmar presença em pelo menos uma refeição para gerar o QR code.",
-                  variant: "default"
-                });
-              }
-            }}
-          >
-            <QrCode 
-              size={48} 
-              className={hasConfirmedMeal ? "text-amber-400" : "text-gray-400"} 
-            />
-          </div>
-        </div>
       </div>
       
-      {/* Feedback Dialog */}
-      <FeedbackDialog 
-        open={showFeedbackDialog} 
-        onOpenChange={setShowFeedbackDialog}
-        attendance={mealAttendance}
-      />
-      
       {/* QR Code Dialog */}
-      {userId && (
+      {userId && activeMealType && mealAttendance.id && (
         <MealQRCode 
           open={showQRCode} 
           onOpenChange={setShowQRCode}
           studentId={userId}
           date={format(selectedDate, 'yyyy-MM-dd')}
-          attendance={mealAttendance}
+          mealType={activeMealType}
+          attendanceId={mealAttendance.id}
+        />
+      )}
+      
+      {/* Feedback Dialog */}
+      {activeMealType && (
+        <FeedbackDialog 
+          open={showFeedbackDialog} 
+          onOpenChange={setShowFeedbackDialog}
+          attendance={{
+            breakfast: mealAttendance.breakfast,
+            lunch: mealAttendance.lunch,
+            snack: mealAttendance.snack
+          }}
+          selectedMealType={activeMealType}
         />
       )}
     </div>

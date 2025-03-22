@@ -1,98 +1,128 @@
 
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
 
 interface FeedbackDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  attendance?: {
+  attendance: {
     breakfast: boolean | null;
     lunch: boolean | null;
     snack: boolean | null;
   };
+  selectedMealType?: 'breakfast' | 'lunch' | 'snack';
 }
 
 const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ 
   open, 
   onOpenChange,
-  attendance = { breakfast: null, lunch: null, snack: null } 
+  attendance,
+  selectedMealType
 }) => {
   const { toast } = useToast();
-  const [feedback, setFeedback] = useState('');
-  const [selectedMeal, setSelectedMeal] = useState('breakfast');
-  const [feedbackType, setFeedbackType] = useState('comment');
+  const [feedbackType, setFeedbackType] = useState<'comment' | 'suggestion'>('comment');
+  const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'snack'>(selectedMealType || 'breakfast');
+  const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Function to get the first confirmed meal for default tab
-  const getDefaultMeal = () => {
-    if (attendance.breakfast === true) return 'breakfast';
-    if (attendance.lunch === true) return 'lunch';
-    if (attendance.snack === true) return 'snack';
+  // Determine which tabs should be enabled based on attendance
+  const getEnabledMeals = () => {
+    return {
+      breakfast: attendance.breakfast === true,
+      lunch: attendance.lunch === true,
+      snack: attendance.snack === true
+    };
+  };
+
+  // Get the first available meal type if the selected one is not available
+  const getInitialMealType = () => {
+    const enabledMeals = getEnabledMeals();
+    
+    if (selectedMealType && enabledMeals[selectedMealType]) {
+      return selectedMealType;
+    }
+    
+    if (enabledMeals.breakfast) return 'breakfast';
+    if (enabledMeals.lunch) return 'lunch';
+    if (enabledMeals.snack) return 'snack';
+    
     return 'breakfast'; // Fallback
   };
 
-  const handleSubmit = async () => {
-    if (!feedback) {
+  // Reset form when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      setMealType(getInitialMealType());
+      setFeedbackType('comment');
+      setContent('');
+    }
+  }, [open, attendance, selectedMealType]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!content.trim()) {
       toast({
-        title: "Feedback vazio",
-        description: "Por favor, escreva seu feedback antes de enviar.",
+        title: "Campo vazio",
+        description: "Por favor, digite seu feedback antes de enviar.",
         variant: "destructive",
       });
       return;
     }
-
-    // Make sure the user confirmed attendance for this meal
-    if (attendance[selectedMeal as keyof typeof attendance] !== true) {
-      toast({
-        title: "Atenção",
-        description: "Você só pode enviar feedback para refeições que confirmou presença.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    
     setIsSubmitting(true);
-
+    
     try {
       const { data: userData } = await supabase.auth.getUser();
       
-      if (!userData || !userData.user) {
-        throw new Error('Usuário não autenticado.');
+      if (!userData?.user) {
+        throw new Error("Usuário não autenticado");
       }
-
+      
       const { error } = await supabase.from('feedback').insert({
         student_id: userData.user.id,
-        meal_type: selectedMeal,
         feedback_type: feedbackType,
-        content: feedback
+        meal_type: mealType,
+        content
       });
-
+      
       if (error) throw error;
-
+      
       toast({
         title: "Feedback enviado",
-        description: "Obrigado por compartilhar sua opinião!",
+        description: "Agradecemos seu feedback! Ele é muito importante para melhorarmos o serviço.",
       });
-
-      setFeedback('');
+      
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting feedback:', error);
+      
       toast({
-        title: "Erro",
-        description: "Não foi possível enviar seu feedback. Tente novamente mais tarde.",
+        title: "Erro ao enviar feedback",
+        description: error.message || "Ocorreu um erro ao enviar seu feedback. Tente novamente mais tarde.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const enabledMeals = getEnabledMeals();
+  const initialMealType = getInitialMealType();
+  
+  // Check if any meal is confirmed
+  const hasConfirmedMeal = 
+    attendance.breakfast === true || 
+    attendance.lunch === true || 
+    attendance.snack === true;
+
+  if (!hasConfirmedMeal) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,12 +131,12 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
           <DialogTitle className="text-xl font-semibold text-primary">Deixe seu comentário</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue={getDefaultMeal()} onValueChange={setSelectedMeal}>
+        <Tabs defaultValue={initialMealType} value={mealType} onValueChange={(value) => setMealType(value as any)}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger 
               value="breakfast" 
               className="flex items-center gap-2"
-              disabled={attendance.breakfast !== true}
+              disabled={!enabledMeals.breakfast}
             >
               <Coffee size={16} />
               <span>Café</span>
@@ -114,7 +144,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             <TabsTrigger 
               value="lunch" 
               className="flex items-center gap-2"
-              disabled={attendance.lunch !== true}
+              disabled={!enabledMeals.lunch}
             >
               <UtensilsCrossed size={16} />
               <span>Almoço</span>
@@ -122,52 +152,58 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             <TabsTrigger 
               value="snack" 
               className="flex items-center gap-2"
-              disabled={attendance.snack !== true}
+              disabled={!enabledMeals.snack}
             >
               <Cookie size={16} />
               <span>Lanche</span>
             </TabsTrigger>
           </TabsList>
           
-          <div className="bg-gray-50 rounded-lg p-3 mt-3 mb-3">
-            <div className="text-sm text-gray-700 font-medium mb-2">Tipo de feedback:</div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button 
-                type="button"
-                variant={feedbackType === 'comment' ? 'default' : 'outline'}
-                className="rounded-full"
-                onClick={() => setFeedbackType('comment')}
+          <form onSubmit={handleSubmit} className="mt-4">
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <div className="flex gap-4 mb-3">
+                  <button 
+                    type="button"
+                    onClick={() => setFeedbackType('comment')}
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                      feedbackType === 'comment' 
+                        ? 'bg-primary text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Comentário
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setFeedbackType('suggestion')}
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                      feedbackType === 'suggestion' 
+                        ? 'bg-primary text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Sugestão
+                  </button>
+                </div>
+                
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder={`Digite seu ${feedbackType === 'comment' ? 'comentário' : 'sugestão'} sobre a refeição...`}
+                  className="w-full h-32 p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                />
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-2 rounded-md transition-colors"
               >
-                Comentário
-              </Button>
-              <Button 
-                type="button"
-                variant={feedbackType === 'suggestion' ? 'default' : 'outline'}
-                className="rounded-full"
-                onClick={() => setFeedbackType('suggestion')}
-              >
-                Sugestão
-              </Button>
+                {isSubmitting ? 'Enviando...' : 'Enviar Feedback'}
+              </button>
             </div>
-          </div>
-          
-          <div className="space-y-4">
-            <Textarea
-              placeholder="Escreva seu feedback aqui..."
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              className="min-h-[120px] rounded-lg border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-            
-            <Button 
-              type="button" 
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? "Enviando..." : "Enviar Feedback"}
-            </Button>
-          </div>
+          </form>
         </Tabs>
       </DialogContent>
     </Dialog>

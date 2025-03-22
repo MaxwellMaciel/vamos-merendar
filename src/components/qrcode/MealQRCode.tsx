@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,11 +9,8 @@ interface MealQRCodeProps {
   onOpenChange: (open: boolean) => void;
   studentId: string;
   date: string;
-  attendance: {
-    breakfast: boolean | null;
-    lunch: boolean | null;
-    snack: boolean | null;
-  };
+  mealType: 'breakfast' | 'lunch' | 'snack';
+  attendanceId: string;
 }
 
 const MealQRCode: React.FC<MealQRCodeProps> = ({ 
@@ -22,99 +18,60 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
   onOpenChange,
   studentId,
   date,
-  attendance
+  mealType,
+  attendanceId
 }) => {
-  const generateQRValue = (mealType: string) => {
-    // Create a structured data object for the QR code
+  const generateQRValue = () => {
     const qrData = {
       studentId,
       date,
       mealType,
+      attendanceId,
       timestamp: new Date().toISOString()
     };
     
     return JSON.stringify(qrData);
   };
 
-  // Determine the initial tab based on confirmed attendance
-  const getDefaultTab = () => {
-    if (attendance.breakfast === true) return 'breakfast';
-    if (attendance.lunch === true) return 'lunch';
-    if (attendance.snack === true) return 'snack';
-    return 'breakfast'; // Fallback
+  const getMealIcon = () => {
+    switch(mealType) {
+      case 'breakfast': return <Coffee size={24} className="text-primary mb-2" />;
+      case 'lunch': return <UtensilsCrossed size={24} className="text-primary mb-2" />;
+      case 'snack': return <Cookie size={24} className="text-primary mb-2" />;
+    }
   };
 
-  // Check if any meal is confirmed
-  const hasConfirmedMeal = 
-    attendance.breakfast === true || 
-    attendance.lunch === true || 
-    attendance.snack === true;
-
-  if (!hasConfirmedMeal) {
-    return null;
-  }
+  const getMealTitle = () => {
+    switch(mealType) {
+      case 'breakfast': return "Café da Manhã";
+      case 'lunch': return "Almoço";
+      case 'snack': return "Lanche da Tarde";
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-primary">QR Code da Refeição</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-primary flex items-center justify-center flex-col">
+            {getMealIcon()}
+            QR Code - {getMealTitle()}
+          </DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue={getDefaultTab()}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger 
-              value="breakfast" 
-              className="flex items-center gap-2"
-              disabled={attendance.breakfast !== true}
-            >
-              <Coffee size={16} />
-              <span>Café</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="lunch" 
-              className="flex items-center gap-2"
-              disabled={attendance.lunch !== true}
-            >
-              <UtensilsCrossed size={16} />
-              <span>Almoço</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="snack" 
-              className="flex items-center gap-2"
-              disabled={attendance.snack !== true}
-            >
-              <Cookie size={16} />
-              <span>Lanche</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          {["breakfast", "lunch", "snack"].map((meal) => {
-            const isConfirmed = attendance[meal as keyof typeof attendance] === true;
-            
-            return (
-              <TabsContent key={meal} value={meal} className="flex justify-center py-6">
-                {isConfirmed ? (
-                  <div className="bg-white p-3 rounded-lg border border-gray-200">
-                    <QRCode
-                      value={generateQRValue(meal)}
-                      size={200}
-                      level="H"
-                    />
-                  </div>
-                ) : (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center w-full">
-                    <p className="text-amber-600">Você precisa confirmar presença para gerar o QR code.</p>
-                  </div>
-                )}
-              </TabsContent>
-            );
-          })}
-          
-          <p className="text-center text-sm text-gray-500 mt-4">
-            Apresente este QR code para confirmar sua presença na refeição
-          </p>
-        </Tabs>
+        <div className="flex justify-center py-6">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <QRCode
+              value={generateQRValue()}
+              size={200}
+              level="H"
+            />
+          </div>
+        </div>
+        
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Apresente este QR code para confirmar sua presença na refeição
+        </p>
       </DialogContent>
     </Dialog>
   );
