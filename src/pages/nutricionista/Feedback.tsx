@@ -1,17 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../../components/StatusBar';
 import { Settings, MessageSquare, Lightbulb, ArrowLeft, Calendar, Coffee, UtensilsCrossed, Cookie, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { Feedback } from "@/types/supabase";
+import { Feedback, Profile } from "@/types/supabase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ExtendedFeedback extends Feedback {
-  date?: string;
   profile?: {
     name: string;
     profile_image: string | null;
@@ -43,12 +43,12 @@ const FeedbackReview = () => {
         
         // Get unique dates from feedback
         const uniqueDates = [...new Set(data?.map(item => 
-          item.date ? format(new Date(item.date), 'yyyy-MM-dd') : format(new Date(item.created_at), 'yyyy-MM-dd')
+          item.date || format(new Date(item.created_at), 'yyyy-MM-dd')
         ))];
         setAvailableDates(uniqueDates);
         
         // Type casting to ensure compatibility with our Feedback type
-        setFeedback(data as ExtendedFeedback[] || []);
+        setFeedback(data as unknown as ExtendedFeedback[] || []);
       } catch (error) {
         console.error('Error fetching feedback:', error);
       } finally {

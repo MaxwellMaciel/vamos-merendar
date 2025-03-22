@@ -43,28 +43,42 @@ export type Database = {
         Row: {
           content: string
           created_at: string | null
+          date: string | null
           feedback_type: string
           id: string
           meal_type: string
+          profile_id: string | null
           student_id: string
         }
         Insert: {
           content: string
           created_at?: string | null
+          date?: string | null
           feedback_type: string
           id?: string
           meal_type: string
+          profile_id?: string | null
           student_id: string
         }
         Update: {
           content?: string
           created_at?: string | null
+          date?: string | null
           feedback_type?: string
           id?: string
           meal_type?: string
+          profile_id?: string | null
           student_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "feedback_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meal_attendance: {
         Row: {
@@ -99,6 +113,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string | null
+          dietary_restrictions: string | null
           email: string | null
           id: string
           name: string
@@ -109,6 +124,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          dietary_restrictions?: string | null
           email?: string | null
           id: string
           name: string
@@ -119,6 +135,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          dietary_restrictions?: string | null
           email?: string | null
           id?: string
           name?: string
