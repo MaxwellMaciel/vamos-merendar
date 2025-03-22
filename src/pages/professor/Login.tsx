@@ -7,6 +7,7 @@ import { IdCard } from 'lucide-react';
 import StatusBar from '../../components/StatusBar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import Loading from '../../components/Loading';
 
 const ProfessorLogin = () => {
   const navigate = useNavigate();
@@ -15,7 +16,15 @@ const ProfessorLogin = () => {
   const [siape, setSiape] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    // Simular carregamento da página
+    setTimeout(() => {
+      setIsPageLoading(false);
+    }, 1000);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +48,9 @@ const ProfessorLogin = () => {
         return;
       }
       
-      // Tentar autenticar com Supabase
+      // Tentar autenticar usando o SIAPE diretamente
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${siape}@example.com`,
+        email: siape,
         password,
       });
       
@@ -62,7 +71,7 @@ const ProfessorLogin = () => {
       
       toast({
         title: "Login bem-sucedido",
-        description: `Bem-vindo(a), Professor(a) ${profileData.name.split(' ')[0]}!`,
+        description: `Bem-vindo(a), Professor(a) ${profileData.name ? profileData.name.split(' ')[0] : ''}!`,
       });
       
       navigate('/professor/dashboard');
@@ -73,6 +82,10 @@ const ProfessorLogin = () => {
       setLoading(false);
     }
   };
+
+  if (isPageLoading) {
+    return <Loading message="Carregando página de login de professor..." />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white page-transition">

@@ -7,6 +7,7 @@ import { IdCard } from 'lucide-react';
 import StatusBar from '../components/StatusBar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import Loading from '../components/Loading';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,7 +16,15 @@ const Login = () => {
   const [matricula, setMatricula] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    // Simular carregamento da página
+    setTimeout(() => {
+      setIsPageLoading(false);
+    }, 1000);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,14 +48,9 @@ const Login = () => {
         return;
       }
       
-      // Construir o email usando a matrícula para autenticação
-      // Corrigindo o problema de login usando o email formado com a matrícula
-      const email = `${matricula}@example.com`;
-      console.log("Tentando login com email:", email);
-      
-      // Tentar autenticar com Supabase
+      // Realizar login diretamente usando a matricula como email
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
+        email: matricula, // Usando a matrícula diretamente como identificador
         password: password,
       });
       
@@ -89,6 +93,10 @@ const Login = () => {
       navigate('/professor/login');
     }
   };
+
+  if (isPageLoading) {
+    return <Loading message="Carregando página de login..." />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white page-transition">
