@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +32,6 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
 
-  // Fetch user profile ID
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -59,7 +57,6 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
     }
   }, [open]);
 
-  // Determine which tabs should be enabled based on attendance
   const getEnabledMeals = () => {
     return {
       breakfast: attendance.breakfast === true,
@@ -68,7 +65,6 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
     };
   };
 
-  // Get the first available meal type if the selected one is not available
   const getInitialMealType = () => {
     const enabledMeals = getEnabledMeals();
     
@@ -83,7 +79,6 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
     return 'breakfast'; // Fallback
   };
 
-  // Reset form when dialog opens
   React.useEffect(() => {
     if (open) {
       setMealType(getInitialMealType());
@@ -148,7 +143,6 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   const enabledMeals = getEnabledMeals();
   const initialMealType = getInitialMealType();
   
-  // Check if any meal is confirmed
   const hasConfirmedMeal = 
     attendance.breakfast === true || 
     attendance.lunch === true || 

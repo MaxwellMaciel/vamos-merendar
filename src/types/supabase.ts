@@ -9,6 +9,7 @@ export interface Profile {
   profile_image: string | null;
   user_type: 'aluno' | 'professor' | 'nutricionista';
   created_at: string;
+  dietary_restrictions?: string | null;
 }
 
 export interface MealAttendance {
@@ -34,8 +35,10 @@ export interface DailyMenu {
 export interface Feedback {
   id: string;
   student_id: string;
+  profile_id?: string;
   feedback_type: string; // Changed from 'comment' | 'suggestion' to string to match Supabase
   meal_type: string; // Changed from 'breakfast' | 'lunch' | 'snack' to string to match Supabase
   content: string;
   created_at: string;
+  date?: string;
 }

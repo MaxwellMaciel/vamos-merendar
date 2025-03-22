@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, isSameDay, isAfter, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -31,12 +30,10 @@ const Dashboard = () => {
   const [isCurrentDay, setIsCurrentDay] = useState(true);
 
   useEffect(() => {
-    // Check if selected date is the current day
     setIsCurrentDay(isSameDay(selectedDate, new Date()));
   }, [selectedDate]);
 
   useEffect(() => {
-    // Get the current user
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
@@ -63,7 +60,6 @@ const Dashboard = () => {
       }
       
       if (data?.name) {
-        // Extract first name
         const firstName = data.name.split(' ')[0];
         setUserName(firstName);
       }
@@ -93,10 +89,8 @@ const Dashboard = () => {
           snack: data.snack,
         });
         
-        // Check if at least one meal is confirmed
         setHasConfirmedMeal(data.breakfast === true || data.lunch === true || data.snack === true);
       } else {
-        // Reset if no data
         setMealAttendance({
           id: '',
           breakfast: null,
@@ -115,7 +109,6 @@ const Dashboard = () => {
     if (userId) {
       fetchAttendance(userId, date);
     } else {
-      // Reset attendance when date changes if no user
       setMealAttendance({
         id: '',
         breakfast: null,
@@ -133,7 +126,6 @@ const Dashboard = () => {
       setIsLoading(true);
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       
-      // Update the local state immediately for better UX
       const newAttendance = {
         ...mealAttendance,
         [meal]: attend,
@@ -141,7 +133,6 @@ const Dashboard = () => {
       
       setMealAttendance(newAttendance);
       
-      // Check if there's already an attendance record for this date
       const { data, error: fetchError } = await supabase
         .from('meal_attendance')
         .select('*')
@@ -152,7 +143,6 @@ const Dashboard = () => {
       if (fetchError) throw fetchError;
       
       if (data) {
-        // Update existing record
         const { error } = await supabase
           .from('meal_attendance')
           .update({
@@ -162,13 +152,11 @@ const Dashboard = () => {
         
         if (error) throw error;
         
-        // Update the ID in case it wasn't set yet
         setMealAttendance(prev => ({
           ...prev,
           id: data.id
         }));
       } else {
-        // Insert new record
         const { data: newData, error } = await supabase
           .from('meal_attendance')
           .insert({
@@ -181,7 +169,6 @@ const Dashboard = () => {
         
         if (error) throw error;
         
-        // Update the ID with the newly created record ID
         if (newData) {
           setMealAttendance(prev => ({
             ...prev,
@@ -195,7 +182,6 @@ const Dashboard = () => {
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
       });
       
-      // Refetch to ensure data consistency
       fetchAttendance(userId, selectedDate);
     } catch (error) {
       console.error('Error updating attendance:', error);
@@ -205,7 +191,6 @@ const Dashboard = () => {
         variant: "destructive",
       });
       
-      // Revert the local state in case of error
       fetchAttendance(userId, selectedDate);
     } finally {
       setIsLoading(false);
@@ -522,7 +507,6 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* QR Code Dialog */}
       {userId && activeMealType && mealAttendance.id && (
         <MealQRCode 
           open={showQRCode} 
@@ -534,7 +518,6 @@ const Dashboard = () => {
         />
       )}
       
-      {/* Feedback Dialog */}
       {activeMealType && (
         <FeedbackDialog 
           open={showFeedbackDialog} 
@@ -545,6 +528,7 @@ const Dashboard = () => {
             snack: mealAttendance.snack
           }}
           selectedMealType={activeMealType}
+          date={selectedDate}
         />
       )}
     </div>

@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../../components/StatusBar';
-import { Settings, MessageSquare, Lightbulb, ArrowLeft, Calendar, Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
+import { Settings, MessageSquare, Lightbulb, ArrowLeft, Calendar, Coffee, UtensilsCrossed, Cookie, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Feedback } from "@/types/supabase";
@@ -12,6 +11,7 @@ import { ptBR } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ExtendedFeedback extends Feedback {
+  date?: string;
   profile?: {
     name: string;
     profile_image: string | null;
@@ -92,7 +92,7 @@ const FeedbackReview = () => {
       : item.feedback_type === 'suggestion';
     
     // Filter by date
-    const itemDate = item.date ? item.date : format(new Date(item.created_at), 'yyyy-MM-dd');
+    const itemDate = item.date || format(new Date(item.created_at), 'yyyy-MM-dd');
     const matchesDate = selectedDate === 'all' || itemDate === selectedDate;
     
     // Filter by meal type
