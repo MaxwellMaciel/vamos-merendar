@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface FeedbackDialogProps {
   open: boolean;
@@ -15,19 +16,48 @@ interface FeedbackDialogProps {
     snack: boolean | null;
   };
   selectedMealType?: 'breakfast' | 'lunch' | 'snack';
+  date: Date;
 }
 
 const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ 
   open, 
   onOpenChange,
   attendance,
-  selectedMealType
+  selectedMealType,
+  date
 }) => {
   const { toast } = useToast();
   const [feedbackType, setFeedbackType] = useState<'comment' | 'suggestion'>('comment');
   const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'snack'>(selectedMealType || 'breakfast');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
+
+  // Fetch user profile ID
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
+            
+          if (data) {
+            setProfileId(data.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+    
+    if (open) {
+      fetchUserProfile();
+    }
+  }, [open]);
 
   // Determine which tabs should be enabled based on attendance
   const getEnabledMeals = () => {
@@ -83,11 +113,15 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
         throw new Error("Usuário não autenticado");
       }
       
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
       const { error } = await supabase.from('feedback').insert({
         student_id: userData.user.id,
+        profile_id: profileId,
         feedback_type: feedbackType,
         meal_type: mealType,
-        content
+        content,
+        date: formattedDate
       });
       
       if (error) throw error;

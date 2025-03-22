@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import NutricionistaLogin from "./pages/nutricionista/Login";
 import ProfessorLogin from "./pages/professor/Login";
 import Register from "./pages/Register";
+import DietaryRestrictions from "./pages/DietaryRestrictions";
 import RegistrationSuccess from "./pages/RegistrationSuccess";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/nutricionista/login" element={<NutricionistaLogin />} />
           <Route path="/professor/login" element={<ProfessorLogin />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/dietary-restrictions" element={<DietaryRestrictions />} />
           <Route path="/registration-success" element={<RegistrationSuccess />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

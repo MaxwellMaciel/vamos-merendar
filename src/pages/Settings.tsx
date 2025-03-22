@@ -1,17 +1,71 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../components/StatusBar';
 import BackButton from '../components/ui/BackButton';
 import ProfileMenuItem from '../components/profile/ProfileMenuItem';
-import { LockKeyhole, User, LogOut, Shield } from 'lucide-react';
+import { LockKeyhole, User, LogOut, Shield, Coffee, Info, HelpCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [userName, setUserName] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    // Lógica de logout aqui
-    navigate('/login');
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('name, email')
+            .eq('id', user.id)
+            .single();
+          
+          if (error) throw error;
+          
+          if (data) {
+            setUserName(data.name || '');
+            setUserEmail(data.email || user.email || '');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Error during logout:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível sair da conta.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -22,65 +76,73 @@ const Settings = () => {
         <BackButton to="/aluno/dashboard" />
       </div>
       
-      <div className="flex items-center justify-between p-6 bg-white mb-4 shadow-sm">
+      <div className="bg-primary p-6 text-white">
         <div className="flex items-center">
-          <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-white"
-            >
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
+            <User size={32} className="text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-medium">Aluno(a)</h2>
-            <p className="text-sm text-gray-500">aluno@example.com</p>
+            <h2 className="text-xl font-semibold">{loading ? 'Carregando...' : userName}</h2>
+            <p className="text-white/80">{loading ? '' : userEmail}</p>
           </div>
         </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
-        <h3 className="p-4 text-sm font-medium text-gray-500 uppercase">Conta</h3>
+      <div className="flex-1 p-4">
+        <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
+          <h3 className="p-4 text-sm font-medium text-gray-500 uppercase border-b border-gray-100">
+            Sua Conta
+          </h3>
+          
+          <ProfileMenuItem
+            label="Dados Pessoais"
+            to="/settings/personal"
+            icon={<User size={18} className="text-primary" />}
+          />
+          
+          <ProfileMenuItem
+            label="Alterar Senha"
+            to="/settings/password"
+            icon={<LockKeyhole size={18} className="text-primary" />}
+          />
+          
+          <ProfileMenuItem
+            label="Restrições Alimentares"
+            to="/settings/restrictions"
+            icon={<Coffee size={18} className="text-primary" />}
+          />
+        </div>
         
-        <ProfileMenuItem
-          label="Dados Pessoais"
-          to="/settings/personal"
-          icon={<User size={18} className="text-primary" />}
-        />
+        <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
+          <h3 className="p-4 text-sm font-medium text-gray-500 uppercase border-b border-gray-100">
+            Informações
+          </h3>
+          
+          <ProfileMenuItem
+            label="Políticas de Privacidade"
+            to="/privacy"
+            icon={<Shield size={18} className="text-primary" />}
+          />
+          
+          <ProfileMenuItem
+            label="Sobre o Aplicativo"
+            to="/about"
+            icon={<Info size={18} className="text-primary" />}
+          />
+          
+          <ProfileMenuItem
+            label="Ajuda e Suporte"
+            to="/help"
+            icon={<HelpCircle size={18} className="text-primary" />}
+          />
+        </div>
         
-        <ProfileMenuItem
-          label="Alterar Senha"
-          to="/settings/password"
-          icon={<LockKeyhole size={18} className="text-primary" />}
-        />
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
-        <h3 className="p-4 text-sm font-medium text-gray-500 uppercase">Legal</h3>
-        
-        <ProfileMenuItem
-          label="Políticas de Privacidade"
-          to="/settings/privacy"
-          icon={<Shield size={18} className="text-primary" />}
-        />
-      </div>
-      
-      <div className="p-6">
         <button
           onClick={handleLogout}
-          className="flex items-center justify-center w-full py-3 text-secondary border border-secondary/20 rounded-lg hover:bg-secondary/5 transition-colors"
+          className="w-full mt-4 bg-white border border-red-500 text-red-500 font-medium py-3 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center"
         >
           <LogOut size={18} className="mr-2" />
-          <span className="font-medium">Sair da conta</span>
+          <span>Sair da conta</span>
         </button>
       </div>
     </div>

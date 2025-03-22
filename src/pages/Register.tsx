@@ -89,23 +89,17 @@ const Register = () => {
       if (error) throw error;
       
       if (data.user) {
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: data.user.id,
-          user_id: data.user.id,
-          name,
-          email,
-          user_type: 'aluno'
+        navigate('/dietary-restrictions', { 
+          state: { 
+            userId: data.user.id,
+            userData: {
+              name,
+              email,
+              matricula
+            }
+          } 
         });
-        
-        if (profileError) throw profileError;
       }
-      
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Bem-vindo ao Vamos Merendar!",
-      });
-      
-      navigate('/registration-success');
     } catch (error: any) {
       console.error('Registration error:', error);
       setError(error.message || 'Ocorreu um erro durante o cadastro.');
