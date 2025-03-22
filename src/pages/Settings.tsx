@@ -119,12 +119,6 @@ const Settings = () => {
           </h3>
           
           <ProfileMenuItem
-            label="Políticas de Privacidade"
-            to="/privacy"
-            icon={<Shield size={18} className="text-primary" />}
-          />
-          
-          <ProfileMenuItem
             label="Sobre o Aplicativo"
             to="/about"
             icon={<Info size={18} className="text-primary" />}

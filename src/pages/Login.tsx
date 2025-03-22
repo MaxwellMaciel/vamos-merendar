@@ -39,9 +39,14 @@ const Login = () => {
         return;
       }
       
+      // Construir o email usando a matrícula para autenticação
+      // Corrigindo o problema de login usando o email formado com a matrícula
+      const email = `${matricula}@example.com`;
+      console.log("Tentando login com email:", email);
+      
       // Tentar autenticar com Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${matricula}@example.com`,
+        email: email,
         password: password,
       });
       

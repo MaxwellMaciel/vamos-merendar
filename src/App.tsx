@@ -21,7 +21,9 @@ import NutricionistaFeedback from "./pages/nutricionista/Feedback";
 import Settings from "./pages/Settings";
 import ChangePassword from "./pages/settings/ChangePassword";
 import PersonalInfo from "./pages/settings/PersonalInfo";
-import Privacy from "./pages/Privacy";
+import DietaryRestrictionsSettings from "./pages/settings/DietaryRestrictionsSettings";
+import About from "./pages/About";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,7 +45,6 @@ const App = () => (
           <Route path="/registration-success" element={<RegistrationSuccess />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/privacy" element={<Privacy />} />
           
           {/* Dashboard routes */}
           <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
@@ -56,6 +57,11 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/settings/password" element={<ChangePassword />} />
           <Route path="/settings/personal" element={<PersonalInfo />} />
+          <Route path="/settings/restrictions" element={<DietaryRestrictionsSettings />} />
+          
+          {/* Info routes */}
+          <Route path="/about" element={<About />} />
+          <Route path="/help" element={<Help />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

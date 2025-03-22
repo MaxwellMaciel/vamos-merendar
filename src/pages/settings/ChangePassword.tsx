@@ -63,7 +63,7 @@ const ChangePassword = () => {
     <div className="min-h-screen flex flex-col bg-white page-transition">
       <StatusBar />
       
-      <div className="p-4 bg-primary text-white">
+      <div className="p-4">
         <BackButton to="/settings" label="Alterar senha" />
       </div>
       
