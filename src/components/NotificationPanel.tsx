@@ -10,7 +10,7 @@ export interface Notification {
   title: string;
   description: string;
   date: Date;
-  type: 'attendance' | 'class' | 'menu' | 'register' | 'complete';
+  type: 'attendance' | 'class' | 'menu' | 'register' | 'complete' | string;
   read: boolean;
 }
 
