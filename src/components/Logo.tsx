@@ -15,14 +15,11 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
 
   return (
     <div className={`relative flex items-center justify-center ${sizes[size]} ${className}`}>
-      <div className="absolute inset-0 rounded-full border-4 border-primary animate-in fade-in duration-300"></div>
-      <div className="flex items-center justify-center w-full h-full relative z-10">
-        <img
-          src="/lovable-uploads/d9e00eab-af0e-454c-a33d-71d76462ffd9.png"
-          alt="Vamos Merendar Logo"
-          className="w-full h-full object-contain"
-        />
-      </div>
+      <img
+        src="/lovable-uploads/32a8ef0f-0cd1-48d7-a2a8-4b8d42a68a23.png"
+        alt="Vamos Merendar Logo"
+        className="w-full h-full object-contain"
+      />
     </div>
   );
 };

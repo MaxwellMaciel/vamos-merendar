@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import NutricionistaLogin from "./pages/nutricionista/Login";
@@ -32,47 +33,49 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <NotificationProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Auth routes */}
-            <Route path="/" element={<Welcome />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/nutricionista/login" element={<NutricionistaLogin />} />
-            <Route path="/professor/login" element={<ProfessorLogin />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dietary-restrictions" element={<DietaryRestrictions />} />
-            <Route path="/registration-success" element={<RegistrationSuccess />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            
-            {/* Dashboard routes */}
-            <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
-            <Route path="/professor/dashboard" element={<ProfessorDashboard />} />
-            <Route path="/nutricionista/dashboard" element={<NutricionistaDashboard />} />
-            <Route path="/nutricionista/menu" element={<NutricionistaWeeklyMenu />} />
-            <Route path="/nutricionista/feedback" element={<NutricionistaFeedback />} />
-            
-            {/* Settings routes */}
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/password" element={<ChangePassword />} />
-            <Route path="/settings/personal" element={<PersonalInfo />} />
-            <Route path="/settings/restrictions" element={<DietaryRestrictionsSettings />} />
-            
-            {/* Info routes */}
-            <Route path="/about" element={<About />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/notifications" element={<Notifications />} />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </NotificationProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <NotificationProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Auth routes */}
+              <Route path="/" element={<Welcome />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/nutricionista/login" element={<NutricionistaLogin />} />
+              <Route path="/professor/login" element={<ProfessorLogin />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dietary-restrictions" element={<DietaryRestrictions />} />
+              <Route path="/registration-success" element={<RegistrationSuccess />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Dashboard routes */}
+              <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
+              <Route path="/professor/dashboard" element={<ProfessorDashboard />} />
+              <Route path="/nutricionista/dashboard" element={<NutricionistaDashboard />} />
+              <Route path="/nutricionista/menu" element={<NutricionistaWeeklyMenu />} />
+              <Route path="/nutricionista/feedback" element={<NutricionistaFeedback />} />
+              
+              {/* Settings routes */}
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/settings/password" element={<ChangePassword />} />
+              <Route path="/settings/personal" element={<PersonalInfo />} />
+              <Route path="/settings/restrictions" element={<DietaryRestrictionsSettings />} />
+              
+              {/* Info routes */}
+              <Route path="/about" element={<About />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/notifications" element={<Notifications />} />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </NotificationProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
