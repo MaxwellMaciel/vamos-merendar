@@ -75,10 +75,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             title: item.title,
             description: item.description,
             date: new Date(item.created_at),
-            // Ensure type is one of the accepted values or default to 'class'
-            type: ['attendance', 'class', 'menu', 'register', 'complete'].includes(item.type || '') 
-              ? (item.type as 'attendance' | 'class' | 'menu' | 'register' | 'complete') 
-              : 'class',
+            type: item.type || 'class',
             read: item.read || false
           }));
           
@@ -109,17 +106,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 newNotification.user_type === null || 
                 newNotification.user_type === userType) {
               
-              // Ensure type is one of the accepted values or default to 'class'
-              const notificationType = ['attendance', 'class', 'menu', 'register', 'complete'].includes(newNotification.type || '')
-                ? newNotification.type 
-                : 'class';
-              
               const formattedNotification: Notification = {
                 id: newNotification.id,
                 title: newNotification.title,
                 description: newNotification.description,
                 date: new Date(newNotification.created_at),
-                type: notificationType,
+                type: newNotification.type || 'class',
                 read: false
               };
               
