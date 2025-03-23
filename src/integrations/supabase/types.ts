@@ -110,6 +110,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          read: boolean | null
+          title: string
+          type: string | null
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          read?: boolean | null
+          title: string
+          type?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          read?: boolean | null
+          title?: string
+          type?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
