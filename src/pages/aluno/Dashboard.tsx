@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, isSameDay, isAfter, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -10,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 import MealQRCode from '@/components/qrcode/MealQRCode';
+import { DailyMenu } from '@/types/supabase';
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -28,6 +30,8 @@ const Dashboard = () => {
   const [hasConfirmedMeal, setHasConfirmedMeal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isCurrentDay, setIsCurrentDay] = useState(true);
+  const [dailyMenu, setDailyMenu] = useState<DailyMenu | null>(null);
+  const [loadingMenu, setLoadingMenu] = useState(false);
 
   useEffect(() => {
     setIsCurrentDay(isSameDay(selectedDate, new Date()));
@@ -45,6 +49,33 @@ const Dashboard = () => {
     
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchDailyMenu(selectedDate);
+    }
+  }, [selectedDate]);
+
+  const fetchDailyMenu = async (date: Date) => {
+    try {
+      setLoadingMenu(true);
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase
+        .from('daily_menu')
+        .select('*')
+        .eq('date', formattedDate)
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      setDailyMenu(data);
+    } catch (error) {
+      console.error('Error fetching daily menu:', error);
+    } finally {
+      setLoadingMenu(false);
+    }
+  };
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -487,23 +518,35 @@ const Dashboard = () => {
             <h2 className="text-lg font-medium text-white">Refeições do dia</h2>
           </div>
           
-          <MealCard
-            title="Lanche (MANHÃ)"
-            description="Pão, manteiga, café com leite"
-            type="breakfast"
-          />
-          
-          <MealCard
-            title="Almoço"
-            description="Arroz, feijão, carne, salada"
-            type="lunch"
-          />
-          
-          <MealCard
-            title="Lanche (TARDE)"
-            description="Suco de laranja, bolo de chocolate"
-            type="dinner"
-          />
+          {loadingMenu ? (
+            <div className="py-6 flex justify-center">
+              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            </div>
+          ) : dailyMenu ? (
+            <>
+              <MealCard
+                title="Café da Manhã"
+                description={dailyMenu.breakfast || "Não disponível"}
+                type="breakfast"
+              />
+              
+              <MealCard
+                title="Almoço"
+                description={dailyMenu.lunch || "Não disponível"}
+                type="lunch"
+              />
+              
+              <MealCard
+                title="Lanche da Tarde"
+                description={dailyMenu.snack || "Não disponível"}
+                type="dinner"
+              />
+            </>
+          ) : (
+            <div className="text-white/80 text-center py-4">
+              Cardápio não disponível para esta data
+            </div>
+          )}
         </div>
       </div>
       
