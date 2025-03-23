@@ -50,7 +50,7 @@ const About = () => {
             </ul>
             
             <p className="text-gray-700">
-              Desenvolvido por estudantes do ensino médio no campus IFCE Maranguape.
+              Desenvolvido como projeto acadêmico na Universidade Federal do Ceará.
             </p>
           </div>
         </div>
@@ -64,17 +64,17 @@ const About = () => {
           <div className="p-4">
             <div className="mb-3">
               <h4 className="font-medium text-gray-800">Desenvolvimento</h4>
-              <p className="text-gray-700">Estudantes do IFCE Maranguape</p>
+              <p className="text-gray-700">Equipe de Desenvolvimento UFC</p>
             </div>
             
             <div className="mb-3">
               <h4 className="font-medium text-gray-800">Design</h4>
-              <p className="text-gray-700">Equipe do IFCE Maranguape</p>
+              <p className="text-gray-700">Equipe de Design UFC</p>
             </div>
             
             <div>
               <h4 className="font-medium text-gray-800">Supervisão</h4>
-              <p className="text-gray-700">Professora Jessyca Bessa</p>
+              <p className="text-gray-700">Prof. Dr. João Silva</p>
             </div>
           </div>
         </div>
@@ -110,7 +110,7 @@ const About = () => {
         
         <div className="text-center mt-6 text-sm text-gray-500 max-w-md mx-auto">
           <p className="flex items-center justify-center">
-            Feito com <Heart size={14} className="text-red-500 mx-1" /> em Maranguape, Ceará.
+            Feito com <Heart size={14} className="text-red-500 mx-1" /> em Fortaleza, Ceará.
           </p>
           <p className="mt-1">© 2025 Vamos Merendar. Todos os direitos reservados.</p>
         </div>

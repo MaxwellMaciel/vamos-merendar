@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../components/StatusBar';
 import BackButton from '../components/ui/BackButton';
@@ -12,17 +12,6 @@ import { cn } from '@/lib/utils';
 const Notifications = () => {
   const navigate = useNavigate();
   const { notifications, markAsRead, markAllAsRead } = useNotifications();
-
-  useEffect(() => {
-    // Mark notifications as read when viewed on this page
-    const timer = setTimeout(() => {
-      if (notifications.some(n => !n.read)) {
-        markAllAsRead();
-      }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [notifications, markAllAsRead]);
 
   const handleNotificationClick = (id: string) => {
     markAsRead(id);
@@ -60,7 +49,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 page-transition">
+    <div className="min-h-screen flex flex-col bg-white page-transition">
       <StatusBar />
       
       <div className="p-4">
@@ -72,29 +61,29 @@ const Notifications = () => {
           <div className="px-4 py-2 flex justify-end">
             <button 
               onClick={markAllAsRead}
-              className="text-sm text-primary font-medium dark:text-primary-foreground"
+              className="text-sm text-primary font-medium"
             >
               Marcar todas como lidas
             </button>
           </div>
           
-          <div className="flex-1 divide-y dark:divide-gray-800">
+          <div className="flex-1 divide-y">
             {notifications.map((notification) => (
               <div 
                 key={notification.id} 
                 className={cn(
-                  "p-4 flex items-start cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800",
-                  !notification.read && "bg-gray-50 dark:bg-gray-800/50"
+                  "p-4 flex items-start cursor-pointer transition-colors hover:bg-gray-50",
+                  !notification.read && "bg-gray-50"
                 )}
                 onClick={() => handleNotificationClick(notification.id)}
               >
-                <div className="mr-3 mt-1 w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                <div className="mr-3 mt-1 w-10 h-10 flex items-center justify-center rounded-full bg-primary/10">
                   {getIcon(notification.type)}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-secondary dark:text-secondary-foreground">{notification.title}</h3>
+                  <h3 className="font-medium text-secondary">{notification.title}</h3>
                   <p className="text-sm text-amber-500 mb-1">{formatDate(notification.date)}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{notification.description}</p>
+                  <p className="text-sm text-gray-600">{notification.description}</p>
                 </div>
               </div>
             ))}
@@ -102,9 +91,9 @@ const Notifications = () => {
         </>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <Bell size={48} className="text-gray-300 dark:text-gray-700 mb-4" />
-          <h2 className="text-xl font-medium text-gray-500 dark:text-gray-400 mb-2">Sem notificações</h2>
-          <p className="text-sm text-gray-400 dark:text-gray-500 text-center">
+          <Bell size={48} className="text-gray-300 mb-4" />
+          <h2 className="text-xl font-medium text-gray-500 mb-2">Sem notificações</h2>
+          <p className="text-sm text-gray-400 text-center">
             Você não tem notificações no momento.
           </p>
         </div>

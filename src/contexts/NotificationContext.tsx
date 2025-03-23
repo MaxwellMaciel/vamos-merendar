@@ -27,110 +27,76 @@ export const useNotifications = () => {
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [userType, setUserType] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Example notifications for demonstration
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const { data } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', user.id)
-            .single();
-          
-          if (data) {
-            setUserType(data.user_type);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
+    // In a real app, you would fetch these from your API or database
+    const demoNotifications: Notification[] = [
+      {
+        id: '1',
+        title: 'Comparecerá ao campus hoje?',
+        description: 'Responda o bloco de pergunta na página inicial para um melhor gerenciamento',
+        date: new Date(),
+        type: 'attendance',
+        read: false
+      },
+      {
+        id: '2',
+        title: 'Aula Programada',
+        description: 'Você tem uma aula de reposição',
+        date: new Date(Date.now() - 3600000), // 1 hour ago
+        type: 'class',
+        read: false
+      },
+      {
+        id: '3',
+        title: 'Cardápio do dia',
+        description: 'Veja a refeição do dia',
+        date: new Date(Date.now() - 7200000), // 2 hours ago
+        type: 'menu',
+        read: true
+      },
+      {
+        id: '4',
+        title: 'Complete seu cadastro',
+        description: 'Complete algumas informações que estão faltando',
+        date: new Date(Date.now() - 86400000), // 1 day ago
+        type: 'register',
+        read: true
+      },
+      {
+        id: '5',
+        title: 'Finalização de cadastro',
+        description: 'Bem-vindo! Você finalizou seu cadastro com sucesso',
+        date: new Date(Date.now() - 172800000), // 2 days ago
+        type: 'complete',
+        read: true
       }
-    };
+    ];
     
-    fetchUserProfile();
-  }, []);
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) return;
-
-        const { data, error } = await supabase
-          .from('notifications')
-          .select('*')
-          .or(`user_id.eq.${user.id},user_type.eq.${userType},user_type.is.null`)
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-
-        if (data) {
-          const formattedNotifications: Notification[] = data.map(item => ({
-            id: item.id,
-            title: item.title,
-            description: item.description,
-            date: new Date(item.created_at),
-            type: item.type || 'class',
-            read: item.read || false
-          }));
+    setNotifications(demoNotifications);
+    
+    // Listen for new notifications (in a real app, this would connect to your backend)
+    const subscription = supabase
+      .channel('public:notifications')
+      .on('broadcast', { event: 'new-notification' }, (payload) => {
+        if (payload.payload) {
+          const newNotification = payload.payload as Notification;
+          setNotifications(prev => [newNotification, ...prev]);
           
-          setNotifications(formattedNotifications);
+          toast({
+            title: newNotification.title,
+            description: newNotification.description,
+          });
         }
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
-    };
-
-    if (userType) {
-      fetchNotifications();
+      })
+      .subscribe();
       
-      // Set up real-time listener for new notifications
-      const channel = supabase
-        .channel('notifications_changes')
-        .on('postgres_changes', 
-          { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'notifications' 
-          }, 
-          (payload) => {
-            const newNotification = payload.new as any;
-            
-            // Check if notification is for this user or user type
-            if (newNotification.user_id === null && 
-                newNotification.user_type === null || 
-                newNotification.user_type === userType) {
-              
-              const formattedNotification: Notification = {
-                id: newNotification.id,
-                title: newNotification.title,
-                description: newNotification.description,
-                date: new Date(newNotification.created_at),
-                type: newNotification.type || 'class',
-                read: false
-              };
-              
-              setNotifications(prev => [formattedNotification, ...prev]);
-              
-              toast({
-                title: formattedNotification.title,
-                description: formattedNotification.description,
-              });
-            }
-          }
-        )
-        .subscribe();
-        
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [userType, toast]);
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [toast]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -142,55 +108,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setShowNotifications(false);
   };
 
-  const markAsRead = async (id: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) return;
-
-      // Update in database
-      await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', id);
-      
-      // Update in state
-      setNotifications(prev =>
-        prev.map(notification =>
-          notification.id === id ? { ...notification, read: true } : notification
-        )
-      );
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
+  const markAsRead = (id: string) => {
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
+    );
   };
 
-  const markAllAsRead = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) return;
-
-      // Get IDs of user's notifications
-      const notificationIds = notifications
-        .filter(n => !n.read)
-        .map(n => n.id);
-
-      if (notificationIds.length === 0) return;
-
-      // Update in database
-      await supabase
-        .from('notifications')
-        .update({ read: true })
-        .in('id', notificationIds);
-      
-      // Update in state
-      setNotifications(prev =>
-        prev.map(notification => ({ ...notification, read: true }))
-      );
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
+  const markAllAsRead = () => {
+    setNotifications(prev =>
+      prev.map(notification => ({ ...notification, read: true }))
+    );
   };
 
   return (

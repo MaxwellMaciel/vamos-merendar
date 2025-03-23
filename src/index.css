@@ -48,17 +48,17 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 142 38% 27%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 6 87% 60%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 45 100% 70%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
@@ -85,35 +85,35 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white py-3 px-4 rounded-lg font-medium transition-all hover:bg-primary/90 active:scale-[0.98] animate-in dark:bg-primary/90 dark:hover:bg-primary;
+    @apply bg-primary text-white py-3 px-4 rounded-lg font-medium transition-all hover:bg-primary-dark active:scale-[0.98] animate-in;
   }
   
   .btn-secondary {
-    @apply bg-secondary text-white py-3 px-4 rounded-lg font-medium transition-all hover:bg-secondary/90 active:scale-[0.98] animate-in dark:bg-secondary/90 dark:hover:bg-secondary;
+    @apply bg-secondary text-white py-3 px-4 rounded-lg font-medium transition-all hover:bg-secondary-dark active:scale-[0.98] animate-in;
   }
   
   .btn-accent {
-    @apply bg-accent text-accent-foreground py-3 px-4 rounded-lg font-medium transition-all hover:bg-accent/90 active:scale-[0.98] animate-in dark:bg-accent/90 dark:hover:bg-accent;
+    @apply bg-accent text-accent-foreground py-3 px-4 rounded-lg font-medium transition-all hover:bg-accent-dark active:scale-[0.98] animate-in;
   }
   
   .btn-outline {
-    @apply border border-gray-300 bg-white text-gray-800 py-3 px-4 rounded-lg font-medium transition-all hover:bg-gray-50 active:scale-[0.98] animate-in dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700;
+    @apply border border-gray-300 bg-white text-gray-800 py-3 px-4 rounded-lg font-medium transition-all hover:bg-gray-50 active:scale-[0.98] animate-in;
   }
   
   .input-primary {
-    @apply bg-accent/50 border-0 rounded-lg p-3 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-primary/30 transition-all animate-in dark:bg-accent/30 dark:text-white dark:placeholder:text-gray-400;
+    @apply bg-accent/50 border-0 rounded-lg p-3 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-primary/30 transition-all animate-in;
   }
   
   .input-password {
-    @apply bg-secondary/20 border-0 rounded-lg p-3 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-secondary/30 transition-all animate-in dark:bg-secondary/10 dark:text-white dark:placeholder:text-gray-400;
+    @apply bg-secondary/20 border-0 rounded-lg p-3 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-secondary/30 transition-all animate-in;
   }
   
   .card-primary {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-in dark:bg-gray-800 dark:border-gray-700;
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-in;
   }
   
   .card-secondary {
-    @apply bg-primary text-white rounded-xl shadow-sm p-4 animate-in dark:bg-primary/90;
+    @apply bg-primary text-white rounded-xl shadow-sm p-4 animate-in;
   }
   
   .page-transition {

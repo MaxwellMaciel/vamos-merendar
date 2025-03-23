@@ -23,25 +23,12 @@ const DaySelector: React.FC<DaySelectorProps> = ({ selectedDate, onSelectDate })
     };
   });
 
-  // Map day names to abbreviated versions to avoid overlap
-  const dayNameMapping = {
-    'dom': 'D',
-    'seg': 'S',
-    'ter': 'T',
-    'qua': 'Q',
-    'qui': 'Q',
-    'sex': 'S',
-    'sáb': 'S',
-  };
-
   return (
     <div className="w-full animate-in fade-in duration-300">
       <div className="grid grid-cols-7 gap-1 text-center mb-2">
         {weekDays.map((day) => (
-          <div key={day.dayName} className="text-xs font-medium text-gray-600 dark:text-gray-400">
-            {/* Use abbreviated day names on mobile */}
-            <span className="md:hidden">{dayNameMapping[day.dayName as keyof typeof dayNameMapping]}</span>
-            <span className="hidden md:inline">{day.dayName}</span>
+          <div key={day.dayName} className="text-xs font-medium text-gray-600">
+            {day.dayName}
           </div>
         ))}
       </div>
@@ -53,7 +40,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({ selectedDate, onSelectDate })
             className={`rounded-full w-9 h-9 mx-auto flex items-center justify-center transition-all ${
               day.isSelected
                 ? 'bg-secondary text-white font-medium shadow-sm'
-                : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                : 'hover:bg-gray-100'
             }`}
           >
             {day.dayNumber}
