@@ -12,14 +12,13 @@ const DaySelector: React.FC<DaySelectorProps> = ({ selectedDate, onSelectDate })
   // Get the start of the current week (Sunday)
   const startOfCurrentWeek = startOfWeek(selectedDate, { weekStartsOn: 0 });
   
-  // Generate the days of the week with shortened day names for mobile
+  // Generate the days of the week
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const day = addDays(startOfCurrentWeek, index);
     return {
       date: day,
       dayNumber: format(day, 'd'),
-      // Use shorter day names for better mobile display
-      dayName: format(day, 'EEE', { locale: ptBR }).toLowerCase().substring(0, 3),
+      dayName: format(day, 'EEE', { locale: ptBR }).toLowerCase(),
       isSelected: format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd'),
     };
   });
@@ -28,7 +27,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({ selectedDate, onSelectDate })
     <div className="w-full animate-in fade-in duration-300">
       <div className="grid grid-cols-7 gap-1 text-center mb-2">
         {weekDays.map((day) => (
-          <div key={day.dayName} className="text-xs font-medium text-gray-600 px-1">
+          <div key={day.dayName} className="text-xs font-medium text-gray-600">
             {day.dayName}
           </div>
         ))}
