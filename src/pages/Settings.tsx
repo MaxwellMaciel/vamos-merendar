@@ -13,6 +13,7 @@ const Settings = () => {
   const { toast } = useToast();
   const [userName, setUserName] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
+  const [userType, setUserType] = useState<string>('aluno');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ const Settings = () => {
         if (user) {
           const { data, error } = await supabase
             .from('profiles')
-            .select('name, email')
+            .select('name, email, user_type')
             .eq('id', user.id)
             .single();
           
@@ -34,6 +35,7 @@ const Settings = () => {
           if (data) {
             setUserName(data.name || '');
             setUserEmail(data.email || user.email || '');
+            setUserType(data.user_type || 'aluno');
           }
         }
       } catch (error) {
@@ -68,12 +70,17 @@ const Settings = () => {
     }
   };
 
+  // Determine dashboard route based on user type
+  const getDashboardRoute = () => {
+    return `/${userType}/dashboard`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 page-transition">
       <StatusBar />
       
       <div className="p-4 bg-white border-b border-gray-200">
-        <BackButton to="/aluno/dashboard" />
+        <BackButton to={getDashboardRoute()} />
       </div>
       
       <div className="bg-primary p-6 text-white">

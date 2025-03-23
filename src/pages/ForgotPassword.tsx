@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BackButton from '../components/ui/BackButton';
 import StatusBar from '../components/StatusBar';
 import { Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +40,7 @@ const ForgotPassword = () => {
       <StatusBar />
       
       <div className="p-4">
-        <BackButton to="/login" label="Volta ao login" />
+        <h1 className="text-xl font-semibold text-primary">Esqueceu sua senha?</h1>
       </div>
       
       <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -94,13 +93,21 @@ const ForgotPassword = () => {
               />
             </div>
             
-            <div className="pt-2">
+            <div className="pt-2 space-y-3">
               <button
                 type="submit"
                 disabled={loading}
                 className="btn-secondary w-full"
               >
                 {loading ? 'Enviando...' : 'Confirmar'}
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="w-full text-primary hover:underline py-2 font-medium"
+              >
+                Voltar ao login
               </button>
             </div>
           </form>
