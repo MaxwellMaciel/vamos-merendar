@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../../components/StatusBar';
 import BackButton from '../../components/ui/BackButton';
@@ -8,44 +8,112 @@ import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera, User } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import Loading from '@/components/Loading';
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [name, setName] = useState('Anna Maria');
-  const [phone, setPhone] = useState('(85) 9 8888-8888');
-  const [email, setEmail] = useState('anamaria@teste.com');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('Para adicionar');
+  const [email, setEmail] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<'name' | 'phone' | 'email' | null>(null);
   const [tempValue, setTempValue] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+        
+        setUserId(user.id);
+        
+        // Fetch user profile data
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('name, email, phone, profile_image')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setName(data.name || '');
+          setEmail(data.email || user.email || '');
+          if (data.phone) setPhone(data.phone);
+          if (data.profile_image) setProfileImage(data.profile_image);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar suas informações.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUserProfile();
+  }, [navigate, toast]);
+
   const handleEditField = (field: 'name' | 'phone' | 'email', currentValue: string) => {
     setEditingField(field);
     setTempValue(currentValue);
   };
   
-  const handleSaveField = () => {
-    if (!editingField) return;
+  const handleSaveField = async () => {
+    if (!editingField || !userId) return;
     
-    switch(editingField) {
-      case 'name':
-        setName(tempValue);
-        break;
-      case 'phone':
-        setPhone(tempValue);
-        break;
-      case 'email':
-        setEmail(tempValue);
-        break;
+    try {
+      // Update the field in Supabase
+      const updates = { [editingField]: tempValue };
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId);
+        
+      if (error) throw error;
+      
+      // Update local state
+      switch(editingField) {
+        case 'name':
+          setName(tempValue);
+          break;
+        case 'phone':
+          setPhone(tempValue);
+          break;
+        case 'email':
+          setEmail(tempValue);
+          break;
+      }
+      
+      toast({
+        title: "Informação atualizada",
+        description: `Seu ${getFieldName(editingField)} foi atualizado com sucesso!`,
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar suas informações.",
+        variant: "destructive",
+      });
+    } finally {
+      setEditingField(null);
     }
-    
-    toast({
-      title: "Informação atualizada",
-      description: `Seu ${getFieldName(editingField)} foi atualizado com sucesso!`,
-    });
-    
-    setEditingField(null);
   };
   
   const getFieldName = (field: 'name' | 'phone' | 'email') => {
@@ -56,20 +124,43 @@ const PersonalInfo = () => {
     }
   };
   
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setProfileImage(event.target?.result as string);
+    if (file && userId) {
+      try {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const imageDataUrl = event.target?.result as string;
+          setProfileImage(imageDataUrl);
+          
+          // Save the image URL to Supabase
+          const { error } = await supabase
+            .from('profiles')
+            .update({ profile_image: imageDataUrl })
+            .eq('id', userId);
+          
+          if (error) throw error;
+          
+          toast({
+            title: "Foto atualizada",
+            description: "Sua foto de perfil foi atualizada com sucesso!",
+          });
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error updating profile image:', error);
         toast({
-          title: "Foto atualizada",
-          description: "Sua foto de perfil foi atualizada com sucesso!",
+          title: "Erro",
+          description: "Não foi possível atualizar sua foto de perfil.",
+          variant: "destructive",
         });
-      };
-      reader.readAsDataURL(file);
+      }
     }
   };
+
+  if (loading) {
+    return <Loading message="Carregando suas informações..." />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white page-transition">
