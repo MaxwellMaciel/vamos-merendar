@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -6,9 +5,12 @@ import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
 import { Calendar, Utensils, PieChart, Edit, MessageSquare, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import NotificationButton from '@/components/ui/NotificationButton';
+import { useProfile } from '@/hooks/use-profile';
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const { profile } = useProfile();
   const [meals, setMeals] = useState([
     {
       id: 1,
@@ -51,28 +53,50 @@ const Dashboard = () => {
       
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
         <div className="flex items-center">
-          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-white"
-            >
-              <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z" />
-            </svg>
+          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3 overflow-hidden">
+            {profile?.profile_image ? (
+              <img 
+                src={profile.profile_image} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Error loading profile image:', e);
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = '';
+                }}
+              />
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-white"
+              >
+                <circle cx="12" cy="8" r="5" />
+                <path d="M20 21a8 8 0 0 0-16 0" />
+              </svg>
+            )}
           </div>
-          <h1 className="text-xl font-medium text-secondary">Olá, Nutricionista!</h1>
+          <h1 className="text-xl font-medium text-[#f45b43]">
+            Olá, {profile?.name ? profile.name.split(' ')[0] : 'Nutricionista'}!
+          </h1>
         </div>
         
-        <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
-          <Settings size={24} />
-        </Link>
+        <div className="flex items-center space-x-4">
+          <div className="ml-4">
+            <NotificationButton />
+          </div>
+          <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
+            <Settings size={24} />
+          </Link>
+        </div>
       </div>
       
       <div className="p-6">
@@ -97,28 +121,24 @@ const Dashboard = () => {
               Cardápio do Dia
             </h2>
           </div>
-          
-          <Link to="/nutricionista/menu/edit-day" className="text-primary hover:text-primary-dark transition-colors">
-            <Edit size={20} />
-          </Link>
         </div>
         
         <div className="space-y-4">
           {meals.map((meal) => (
-            <div key={meal.id} className="card-primary">
+            <div key={meal.id} className="card-primary shadow-lg bg-white border border-gray-200">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-medium text-primary">{meal.type}</h3>
-                <span className="text-xs text-gray-500">{meal.time}</span>
+                <h3 className="font-medium text-[#244b2c]">{meal.type}</h3>
+                <span className="text-xs text-gray-600">{meal.time}</span>
               </div>
               
-              <p className="text-gray-700 mb-3">{meal.menu}</p>
+              <p className="text-gray-800 mb-3">{meal.menu}</p>
               
-              <div className="flex items-center justify-between bg-gray-50 p-2 rounded">
+              <div className="flex items-center justify-between bg-[#fde2a1] p-2 rounded-lg shadow-sm">
                 <div className="flex items-center">
-                  <PieChart size={16} className="text-secondary mr-1" />
-                  <span className="text-xs text-gray-600">Confirmados</span>
+                  <PieChart size={16} className="text-[#f45b43] mr-1" />
+                  <span className="text-xs text-[#f45b43] font-medium">Confirmados</span>
                 </div>
-                <span className="font-bold text-secondary">{meal.confirmedCount}</span>
+                <span className="font-bold text-[#f45b43]">{meal.confirmedCount}</span>
               </div>
             </div>
           ))}
@@ -136,7 +156,7 @@ const Dashboard = () => {
         
         <Link 
           to="/nutricionista/feedback" 
-          className="btn-secondary w-full flex items-center justify-center"
+          className="bg-[#f45b43] hover:bg-[#f45b43]/90 text-white w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all"
         >
           <MessageSquare size={18} className="mr-2" />
           <span>Ver Comentários e Sugestões</span>

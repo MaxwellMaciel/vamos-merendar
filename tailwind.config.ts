@@ -1,5 +1,4 @@
-
-import type { Config } from "tailwindcss";
+import { type Config } from "tailwindcss";
 
 export default {
 	darkMode: ["class"],
@@ -20,44 +19,44 @@ export default {
 		},
 		extend: {
 			colors: {
-				border: 'hsl(var(--border))',
-				input: 'hsl(var(--input))',
-				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				border: "var(--border)",
+				input: "var(--input)",
+				ring: "var(--ring)",
+				background: "var(--background)",
+				foreground: "var(--foreground)",
 				primary: {
-					DEFAULT: '#2A603B', // Verde principal
-					foreground: '#FFFFFF',
-					light: '#3D7F4D',
-					dark: '#1F472C'
+					DEFAULT: "var(--primary)",
+					foreground: "var(--primary-foreground)",
+					hover: "var(--primary-hover)",
+					light: '#2d724a',
+					dark: '#143d25'
 				},
 				secondary: {
-					DEFAULT: '#F15642', // Vermelho
-					foreground: '#FFFFFF',
+					DEFAULT: "var(--secondary)",
+					foreground: "var(--secondary-foreground)",
+					hover: "var(--secondary-hover)",
 					light: '#F37566',
 					dark: '#D13B2A'
 				},
-				accent: {
-					DEFAULT: '#FFD966', // Amarelo
-					foreground: '#333333',
-					light: '#FFDF85',
-					dark: '#E6C050'
-				},
 				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					DEFAULT: "var(--destructive)",
+					foreground: "var(--destructive-foreground)"
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					DEFAULT: "var(--muted)",
+					foreground: "var(--muted-foreground)"
+				},
+				accent: {
+					DEFAULT: "var(--accent)",
+					foreground: "var(--accent-foreground)"
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
 				},
 				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
+					DEFAULT: "var(--card)",
+					foreground: "var(--card-foreground)"
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

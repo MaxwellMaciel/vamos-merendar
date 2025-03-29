@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import StatusBar from '../components/StatusBar';
@@ -15,6 +14,7 @@ interface LocationState {
     name: string;
     email: string;
     matricula: string;
+    phone: string;
   };
 }
 
@@ -22,7 +22,15 @@ const DietaryRestrictions = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { userId, userData } = (location.state as LocationState) || { userId: '', userData: { name: '', email: '', matricula: '' } };
+  const { userId, userData } = (location.state as LocationState) || { 
+    userId: '', 
+    userData: { 
+      name: '', 
+      email: '', 
+      matricula: '',
+      phone: ''
+    } 
+  };
   
   const [hasRestriction, setHasRestriction] = useState<string>('no');
   const [restrictions, setRestrictions] = useState('');
@@ -47,6 +55,8 @@ const DietaryRestrictions = () => {
         user_id: userId,
         name: userData.name,
         email: userData.email,
+        phone: userData.phone,
+        matricula: userData.matricula,
         dietary_restrictions: restrictionsData,
         user_type: 'aluno'
       });
@@ -127,7 +137,7 @@ const DietaryRestrictions = () => {
               <button
                 type="submit"
                 disabled={loading || (hasRestriction === 'yes' && !restrictions.trim())}
-                className="btn-secondary w-full"
+                className="w-full bg-[#f45b43] hover:bg-[#f45b43]/90 text-white py-3 px-4 rounded-lg font-medium transition-all"
               >
                 {loading ? 'Salvando...' : 'Continuar'}
               </button>

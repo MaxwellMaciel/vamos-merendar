@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BackButton from '../components/ui/BackButton';
 import StatusBar from '../components/StatusBar';
 import { Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -14,7 +13,7 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -25,24 +24,31 @@ const ForgotPassword = () => {
     
     setLoading(true);
     
-    // Simulando o envio de um e-mail de recuperação
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Enviar email de recuperação de senha usando o Supabase
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      
       toast({
         title: "Email enviado",
-        description: "Verifique seu e-mail para redefinir sua senha.",
+        description: "Verifique seu e-mail para redefinir sua senha. Se não encontrar, verifique sua caixa de spam.",
       });
-      navigate('/reset-password');
-    }, 1000);
+      
+      // Não redirecionamos imediatamente, deixamos o usuário ver a mensagem
+    } catch (error: any) {
+      console.error('Erro ao enviar email de recuperação:', error);
+      setError(error.message || 'Ocorreu um erro ao enviar o email de recuperação.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 page-transition">
       <StatusBar />
-      
-      <div className="p-4">
-        <BackButton to="/login" label="Volta ao login" />
-      </div>
       
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="bg-accent w-20 h-20 rounded-lg flex items-center justify-center mb-6 shadow-sm">
@@ -98,12 +104,21 @@ const ForgotPassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-secondary w-full"
+                className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
               >
                 {loading ? 'Enviando...' : 'Confirmar'}
               </button>
             </div>
           </form>
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => navigate('/login')}
+              className="text-gray-600 hover:text-gray-800 transition-colors flex items-center justify-center gap-1 text-sm mx-auto"
+            >
+              ← Voltar para login principal
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import QRCode from 'react-qr-code';
 import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
+import { useMealQR } from '@/hooks/use-meal-qr';
 
 interface MealQRCodeProps {
   open: boolean;
@@ -21,17 +21,11 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
   mealType,
   attendanceId
 }) => {
-  const generateQRValue = () => {
-    const qrData = {
-      studentId,
-      date,
-      mealType,
-      attendanceId,
-      timestamp: new Date().toISOString()
-    };
-    
-    return JSON.stringify(qrData);
-  };
+  const { qrCodeHash, loading } = useMealQR({
+    studentId,
+    date,
+    mealType
+  });
 
   const getMealIcon = () => {
     switch(mealType) {
@@ -49,9 +43,30 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
     }
   };
 
+  // Gera o valor do QR code usando o hash persistente
+  const qrValue = qrCodeHash ? JSON.stringify({
+    hash: qrCodeHash,
+    studentId,
+    date,
+    mealType,
+    attendanceId
+  }) : '';
+
+  if (loading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md bg-white">
+          <div className="flex justify-center py-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md">
+      <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md bg-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-primary flex items-center justify-center flex-col">
             {getMealIcon()}
@@ -60,9 +75,9 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
         </DialogHeader>
         
         <div className="flex justify-center py-6">
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
+          <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
             <QRCode
-              value={generateQRValue()}
+              value={qrValue}
               size={200}
               level="H"
             />

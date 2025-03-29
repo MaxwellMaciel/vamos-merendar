@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/Logo';
@@ -6,7 +5,10 @@ import PasswordInput from '../../components/auth/PasswordInput';
 import { IdCard } from 'lucide-react';
 import StatusBar from '../../components/StatusBar';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/supabase';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const NutricionistaLogin = () => {
   const navigate = useNavigate();
@@ -20,55 +22,61 @@ const NutricionistaLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!siape || !password) {
-      setError('Por favor, preencha todos os campos.');
-      return;
-    }
-    
     setLoading(true);
     
     try {
-      // Modo de teste para facilitar o desenvolvimento
-      if (siape === 'nutricionista' && password === 'nutricionista123') {
-        toast({
-          title: "Login bem-sucedido",
-          description: "Bem-vindo(a), Nutricionista!",
-        });
-        navigate('/nutricionista/dashboard');
-        return;
-      }
+      // Garante que o SIAPE seja uma string
+      const siapeString = String(siape).trim();
+      console.log('Buscando perfil com SIAPE:', siapeString);
       
-      // Tentar autenticar com Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${siape}@example.com`,
+      // Primeiro busca o perfil pelo SIAPE
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('siape', siapeString)
+        .eq('user_type', 'nutricionista')
+        .single();
+
+      console.log('Resultado da busca:', { profile, profileError });
+
+      if (profileError) {
+        console.error('Erro ao buscar perfil:', profileError);
+        throw new Error('SIAPE não encontrado');
+      }
+
+      if (!profile?.email) {
+        throw new Error('Email não encontrado para este SIAPE');
+      }
+
+      console.log('Tentando login com:', { email: profile.email });
+
+      // Faz login com o email associado ao SIAPE
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: profile.email,
         password,
       });
+
+      console.log('Resultado do login:', { authData, authError });
       
-      if (error) throw error;
-      
-      // Verificar se é nutricionista
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_type, name')
-        .eq('user_id', data.user.id)
-        .single();
-        
-      if (profileError) throw profileError;
-      
-      if (profileData.user_type !== 'nutricionista') {
-        throw new Error('Este usuário não tem perfil de nutricionista.');
+      if (authError) {
+        console.error('Erro na autenticação:', authError);
+        throw new Error('Senha incorreta');
       }
       
       toast({
-        title: "Login bem-sucedido",
-        description: `Bem-vindo(a), Nutricionista ${profileData.name.split(' ')[0]}!`,
+        title: "Login realizado com sucesso",
+        description: "Bem-vindo(a)!",
       });
       
       navigate('/nutricionista/dashboard');
     } catch (error: any) {
-      console.error('Login error:', error);
-      setError('SIAPE ou senha inválidos.');
+      console.error('Erro detalhado:', error);
+      setError(error.message || 'SIAPE ou senha inválidos.');
+      toast({
+        title: "Erro no login",
+        description: error.message || "SIAPE ou senha inválidos.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -102,8 +110,8 @@ const NutricionistaLogin = () => {
                   type="text"
                   placeholder="SIAPE"
                   value={siape}
-                  onChange={(e) => setSiape(e.target.value)}
-                  className="input-primary pl-10 w-full"
+                  onChange={(e) => setSiape(e.target.value.trim())}
+                  className="input-primary pl-10 w-full shadow-md"
                 />
               </div>
             </div>
@@ -113,13 +121,14 @@ const NutricionistaLogin = () => {
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="shadow-md bg-white"
             />
             
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-secondary w-full"
+                className="w-full bg-[#f45b43] hover:bg-[#f45b43]/90 text-white py-3 px-4 rounded-lg font-medium transition-all"
               >
                 {loading ? 'Entrando...' : 'Entrar'}
               </button>

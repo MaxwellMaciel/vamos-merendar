@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../components/ui/BackButton';
 import PasswordInput from '../components/auth/PasswordInput';
 import PasswordRequirements from '../components/auth/PasswordRequirements';
 import StatusBar from '../components/StatusBar';
-import { Mail, User, Calendar, IdCard } from 'lucide-react';
+import { Mail, User, Calendar, IdCard, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,6 +19,7 @@ const Register = () => {
   const [dob, setDob] = useState('');
   const [matricula, setMatricula] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -111,17 +111,46 @@ const Register = () => {
     setDob(formattedDate);
   };
 
+  const formatPhoneNumber = (input: string) => {
+    const numbersOnly = input.replace(/\D/g, '');
+    
+    if (numbersOnly.length <= 2) {
+      return `(${numbersOnly}`;
+    } else if (numbersOnly.length <= 6) {
+      return `(${numbersOnly.slice(0, 2)}) ${numbersOnly.slice(2)}`;
+    } else if (numbersOnly.length <= 10) {
+      return `(${numbersOnly.slice(0, 2)}) ${numbersOnly.slice(2, 6)}-${numbersOnly.slice(6)}`;
+    } else {
+      return `(${numbersOnly.slice(0, 2)}) ${numbersOnly.slice(2, 7)}-${numbersOnly.slice(7, 11)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedPhone = formatPhoneNumber(e.target.value);
+    setPhone(formattedPhone);
+  };
+
+  const validatePhone = (phoneNumber: string) => {
+    const numbersOnly = phoneNumber.replace(/\D/g, '');
+    return numbersOnly.length >= 10 && numbersOnly.length <= 11;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (!name || !dob || !matricula || !email || !password || !confirmPassword) {
+    if (!name || !dob || !matricula || !email || !password || !confirmPassword || !phone) {
       setError('Por favor, preencha todos os campos.');
       return;
     }
     
     if (!validateAge(dob)) {
       setError('Data de nascimento inválida. A idade deve estar entre 5 e 110 anos.');
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      setError('Número de telefone inválido. Digite um número válido com DDD.');
       return;
     }
     
@@ -143,7 +172,6 @@ const Register = () => {
     setLoading(true);
     
     try {
-      // Agora vamos usar a matrícula diretamente como identificador de login
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -151,7 +179,8 @@ const Register = () => {
           data: {
             matricula,
             name,
-            dob
+            dob,
+            phone
           }
         }
       });
@@ -165,7 +194,8 @@ const Register = () => {
             userData: {
               name,
               email,
-              matricula
+              matricula,
+              phone
             }
           } 
         });
@@ -215,10 +245,10 @@ const Register = () => {
               </div>
               <input
                 type="text"
-                placeholder="Nome completo*"
+                placeholder="Nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="input-primary pl-10 w-full"
+                className="input-primary pl-10 w-full bg-[#fde2a1] shadow-md"
                 required
               />
             </div>
@@ -229,11 +259,11 @@ const Register = () => {
               </div>
               <input
                 type="text"
-                placeholder="Data de Nascimento* (DD/MM/AAAA)"
+                placeholder="Data de Nascimento (DD/MM/AAAA)"
                 value={dob}
                 onChange={handleDateChange}
                 maxLength={10}
-                className="input-primary pl-10 w-full"
+                className="input-primary pl-10 w-full bg-[#fde2a1] shadow-md"
                 required
               />
             </div>
@@ -244,10 +274,10 @@ const Register = () => {
               </div>
               <input
                 type="text"
-                placeholder="Matrícula*"
+                placeholder="Matrícula"
                 value={matricula}
                 onChange={(e) => setMatricula(e.target.value)}
-                className="input-primary pl-10 w-full"
+                className="input-primary pl-10 w-full bg-[#fde2a1] shadow-md"
                 required
               />
             </div>
@@ -258,26 +288,43 @@ const Register = () => {
               </div>
               <input
                 type="email"
-                placeholder="E-mail*"
+                placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input-primary pl-10 w-full"
+                className="input-primary pl-10 w-full bg-[#fde2a1] shadow-md"
+                required
+              />
+            </div>
+            
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary">
+                <Phone size={18} />
+              </div>
+              <input
+                type="tel"
+                placeholder="Telefone (99) 99999-9999"
+                value={phone}
+                onChange={handlePhoneChange}
+                maxLength={16}
+                className="input-primary pl-10 w-full bg-[#fde2a1] shadow-md"
                 required
               />
             </div>
             
             <PasswordInput
               id="password"
-              placeholder="Senha*"
+              placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="bg-[#fde2a1] rounded-lg"
             />
             
             <PasswordInput
               id="confirmPassword"
-              placeholder="Confirmar Senha*"
+              placeholder="Confirmar senha"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              className="bg-[#fde2a1] rounded-lg"
             />
             
             <PasswordRequirements password={password} show={showPasswordRequirements} />
@@ -299,7 +346,7 @@ const Register = () => {
                       <DialogTrigger className="text-primary underline font-medium">
                         Termos e Condições de Uso
                       </DialogTrigger>
-                      <DialogContent className="max-w-xl rounded-xl border-0 shadow-lg">
+                      <DialogContent className="max-w-xl rounded-xl border-0 shadow-lg bg-white">
                         <DialogHeader>
                           <DialogTitle className="text-xl text-primary">Termos e Condições de Uso - Vamos Merendar</DialogTitle>
                         </DialogHeader>
@@ -395,7 +442,7 @@ const Register = () => {
                       <DialogTrigger className="text-primary underline font-medium">
                         Política de Privacidade
                       </DialogTrigger>
-                      <DialogContent className="max-w-xl rounded-xl border-0 shadow-lg">
+                      <DialogContent className="max-w-xl rounded-xl border-0 shadow-lg bg-white">
                         <DialogHeader>
                           <DialogTitle className="text-xl text-primary">Política de Privacidade - Vamos Merendar</DialogTitle>
                         </DialogHeader>
@@ -488,7 +535,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-secondary w-full"
+                className="w-full bg-[#f45b43] hover:bg-[#f45b43]/90 text-white py-3 px-4 rounded-lg font-medium transition-all"
               >
                 {loading ? 'Criando conta...' : 'Cadastrar'}
               </button>
@@ -498,7 +545,7 @@ const Register = () => {
           <div className="mt-6 text-center">
             <span className="text-sm text-gray-600">
               Já tem uma conta?{' '}
-              <Link to="/login" className="text-secondary font-medium hover:underline">
+              <Link to="/login" className="text-[#f45b43] font-medium hover:underline">
                 Faça login
               </Link>
             </span>

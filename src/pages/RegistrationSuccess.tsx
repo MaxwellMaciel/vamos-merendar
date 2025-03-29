@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
@@ -40,7 +39,7 @@ const RegistrationSuccess = () => {
         
         <button
           onClick={() => navigate('/login')}
-          className="btn-accent w-full max-w-xs"
+          className="w-full max-w-xs bg-[#f45b43] hover:bg-[#f45b43]/90 text-white py-3 px-4 rounded-lg font-medium transition-all"
         >
           Voltar para o cadastro
         </button>

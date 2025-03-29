@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
@@ -26,7 +25,7 @@ const Welcome = () => {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 page-transition bg-gradient-to-b from-white to-gray-50">
       <Logo size="lg" className="mb-6" />
 
-      <h1 className="text-2xl font-bold text-primary text-center mb-2">
+      <h1 className="text-2xl font-bold text-[#f45b43] text-center mb-2">
         Seja bem-vindo(a)!
       </h1>
 
@@ -40,7 +39,7 @@ const Welcome = () => {
       <button 
         onClick={handleLogin}
         disabled={loading}
-        className="btn-secondary w-full max-w-xs mb-3"
+        className="bg-[#f45b43] text-white py-3 px-4 rounded-lg font-medium transition-all hover:bg-[#f45b43]/90 active:scale-[0.98] w-full max-w-xs mb-3"
       >
         {loading ? 'Carregando...' : 'Fazer login'}
       </button>
@@ -49,7 +48,7 @@ const Welcome = () => {
         Não tem uma conta?{' '}
         <button 
           onClick={handleCreateAccount}
-          className="ml-1 text-secondary font-medium hover:underline"
+          className="ml-1 text-[#f45b43] font-medium hover:underline"
         >
           Crie uma conta
         </button>

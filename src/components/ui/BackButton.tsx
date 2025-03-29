@@ -1,32 +1,21 @@
-
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface BackButtonProps {
-  to?: string;
+  to: string;
   label?: string;
+  className?: string;
 }
 
-const BackButton: React.FC<BackButtonProps> = ({ to, label }) => {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    if (to) {
-      navigate(to);
-    } else {
-      navigate(-1);
-    }
-  };
-
+const BackButton = ({ to, label, className = "" }: BackButtonProps) => {
   return (
-    <button 
-      onClick={handleClick}
-      className="flex items-center text-primary hover:text-primary-dark transition-colors py-2"
-    >
-      <ChevronLeft size={20} />
-      {label && <span className="font-medium">{label}</span>}
-    </button>
+    <div className="flex items-center">
+      <Link to={to} className={`flex items-center gap-2 text-primary hover:text-primary/80 transition-colors ${className}`}>
+        <ChevronLeft className="h-6 w-6" />
+        {label && <span className="font-medium">{label}</span>}
+      </Link>
+    </div>
   );
 };
 

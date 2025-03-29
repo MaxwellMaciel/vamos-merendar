@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -7,6 +6,7 @@ import DaySelector from '../../components/calendar/DaySelector';
 import { Calendar, Settings, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
+import NotificationButton from '@/components/ui/NotificationButton';
 
 const AttendanceQuestion = () => {
   return (
@@ -93,18 +93,8 @@ const Dashboard = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <button
-              onClick={toggleNotifications}
-              className="text-primary hover:text-primary-dark transition-colors"
-            >
-              <Bell size={24} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-secondary text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
+          <div className="ml-4">
+            <NotificationButton />
           </div>
           <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
             <Settings size={24} />

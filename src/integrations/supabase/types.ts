@@ -112,37 +112,40 @@ export type Database = {
       }
       profiles: {
         Row: {
-          created_at: string | null
-          dietary_restrictions: string | null
-          email: string | null
           id: string
+          user_id: string
           name: string
+          email: string | null
           phone: string | null
           profile_image: string | null
-          user_id: string | null
           user_type: string
+          created_at: string | null
+          dietary_restrictions: string | null
+          matricula: string
         }
         Insert: {
-          created_at?: string | null
-          dietary_restrictions?: string | null
-          email?: string | null
-          id: string
+          id?: string
+          user_id: string
           name: string
+          email?: string | null
           phone?: string | null
           profile_image?: string | null
-          user_id?: string | null
           user_type?: string
+          created_at?: string | null
+          dietary_restrictions?: string | null
+          matricula: string
         }
         Update: {
-          created_at?: string | null
-          dietary_restrictions?: string | null
-          email?: string | null
           id?: string
+          user_id?: string
           name?: string
+          email?: string | null
           phone?: string | null
           profile_image?: string | null
-          user_id?: string | null
           user_type?: string
+          created_at?: string | null
+          dietary_restrictions?: string | null
+          matricula?: string
         }
         Relationships: []
       }

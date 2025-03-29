@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
@@ -38,59 +37,64 @@ const Login = () => {
     setLoading(true);
     
     try {
-      // Verificar se é um login simulado para desenvolvimento
-      if (matricula === 'aluno' && password === 'aluno123') {
-        toast({
-          title: "Login bem-sucedido",
-          description: "Bem-vindo de volta ao Vamos Merendar!",
-        });
-        navigate('/aluno/dashboard');
-        return;
-      }
+      console.log('Iniciando processo de login...');
       
-      // Realizar login diretamente usando a matricula como email
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: matricula, // Usando a matrícula diretamente como identificador
-        password: password,
-      });
-      
-      if (error) throw error;
-      
-      // Obter o tipo de usuário
-      const { data: profileData } = await supabase
+      // 1. Primeiro, buscar o perfil usando a matrícula
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('user_type, name')
-        .eq('user_id', data.user.id)
+        .select('*')
+        .eq('matricula', matricula)
         .single();
-      
+
+      console.log('Resultado da busca do perfil:', { profile, profileError });
+
+      if (profileError || !profile) {
+        throw new Error('Matrícula não encontrada.');
+      }
+
+      console.log('Email encontrado:', profile.email);
+
+      // 2. Tentar fazer login usando o email do perfil
+      const { data: authData, error: loginError } = await supabase.auth.signInWithPassword({
+        email: profile.email.toLowerCase(),
+        password: password
+      });
+
+      console.log('Resultado do login:', { success: !loginError, error: loginError });
+
+      if (loginError) {
+        throw loginError;
+      }
+
+      // 3. Login bem-sucedido
       toast({
         title: "Login bem-sucedido",
-        description: `Bem-vindo de volta, ${profileData?.name || 'Usuário'}!`,
+        description: `Bem-vindo de volta, ${profile.name}!`,
       });
-      
-      // Redirecionar com base no tipo de usuário
-      if (profileData?.user_type === 'aluno') {
+
+      // 4. Redirecionar com base no tipo de usuário
+      if (profile.user_type === 'aluno') {
         navigate('/aluno/dashboard');
-      } else if (profileData?.user_type === 'professor') {
+      } else if (profile.user_type === 'professor') {
         navigate('/professor/dashboard');
-      } else if (profileData?.user_type === 'nutricionista') {
+      } else if (profile.user_type === 'nutricionista') {
         navigate('/nutricionista/dashboard');
       } else {
-        navigate('/aluno/dashboard'); // Fallback
+        navigate('/aluno/dashboard'); // Fallback para aluno
       }
     } catch (error: any) {
-      console.error('Login error:', error);
-      setError('Matrícula/SIAPE ou senha inválidos.');
+      console.error('Erro no login:', error);
+      
+      // Mensagens de erro mais específicas
+      if (error.message === 'Matrícula não encontrada.') {
+        setError('Matrícula não encontrada. Verifique se digitou corretamente.');
+      } else if (error.message === 'Invalid login credentials') {
+        setError('Senha incorreta. Verifique se digitou corretamente.');
+      } else {
+        setError('Ocorreu um erro ao fazer login. Por favor, tente novamente.');
+      }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRoleSelection = (role: string) => {
-    if (role === 'nutricionista') {
-      navigate('/nutricionista/login');
-    } else if (role === 'professor') {
-      navigate('/professor/login');
     }
   };
 
@@ -123,7 +127,7 @@ const Login = () => {
                   placeholder="Matrícula/SIAPE"
                   value={matricula}
                   onChange={(e) => setMatricula(e.target.value)}
-                  className="input-primary pl-10 w-full"
+                  className="input-primary pl-10 w-full shadow-md"
                 />
               </div>
             </div>
@@ -133,13 +137,14 @@ const Login = () => {
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="shadow-md bg-white"
             />
             
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-secondary w-full"
+                className="w-full bg-[#f45b43] hover:bg-[#f45b43]/90 text-white py-3 px-4 rounded-lg font-medium transition-all"
               >
                 {loading ? 'Entrando...' : 'Entrar'}
               </button>
@@ -162,24 +167,24 @@ const Login = () => {
           </div>
           
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleRoleSelection('nutricionista')}
-              className="btn-outline text-center text-sm py-2"
+            <Link
+              to="/nutricionista/login"
+              className="btn-outline text-center text-sm py-2 shadow-md"
             >
               Nutricionista
-            </button>
-            <button
-              onClick={() => handleRoleSelection('professor')}
-              className="btn-outline text-center text-sm py-2"
+            </Link>
+            <Link
+              to="/professor/login"
+              className="btn-outline text-center text-sm py-2 shadow-md"
             >
               Professor(a)
-            </button>
+            </Link>
           </div>
           
           <div className="mt-6 text-center">
             <span className="text-sm text-gray-600">
               Não tem uma conta?{' '}
-              <Link to="/register" className="text-secondary font-medium hover:underline">
+              <Link to="/register" className="text-[#f45b43] font-medium hover:underline">
                 Cadastre-se
               </Link>
             </span>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/Logo';
@@ -116,7 +115,7 @@ const ProfessorLogin = () => {
                   placeholder="SIAPE"
                   value={siape}
                   onChange={(e) => setSiape(e.target.value)}
-                  className="input-primary pl-10 w-full"
+                  className="input-primary pl-10 w-full shadow-md"
                 />
               </div>
             </div>
@@ -126,13 +125,14 @@ const ProfessorLogin = () => {
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="shadow-md bg-white"
             />
             
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-secondary w-full"
+                className="w-full bg-[#f45b43] hover:bg-[#f45b43]/90 text-white py-3 px-4 rounded-lg font-medium transition-all"
               >
                 {loading ? 'Entrando...' : 'Entrar'}
               </button>

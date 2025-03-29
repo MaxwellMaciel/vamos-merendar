@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, addDays, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -39,7 +38,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({ selectedDate, onSelectDate })
             onClick={() => onSelectDate(day.date)}
             className={`rounded-full w-9 h-9 mx-auto flex items-center justify-center transition-all ${
               day.isSelected
-                ? 'bg-secondary text-white font-medium shadow-sm'
+                ? 'bg-[#f45b43] text-white font-medium shadow-sm'
                 : 'hover:bg-gray-100'
             }`}
           >

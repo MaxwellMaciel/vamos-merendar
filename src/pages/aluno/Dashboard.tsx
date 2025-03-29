@@ -10,9 +10,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 import MealQRCode from '@/components/qrcode/MealQRCode';
+import { useProfile } from '@/hooks/use-profile';
+import NotificationButton from '@/components/ui/NotificationButton';
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const { profile, loading: profileLoading } = useProfile();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [mealAttendance, setMealAttendance] = useState({
     id: '',
@@ -23,8 +26,6 @@ const Dashboard = () => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [activeMealType, setActiveMealType] = useState<'breakfast' | 'lunch' | 'snack' | null>(null);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
   const [hasConfirmedMeal, setHasConfirmedMeal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isCurrentDay, setIsCurrentDay] = useState(true);
@@ -34,39 +35,10 @@ const Dashboard = () => {
   }, [selectedDate]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        setUserId(data.user.id);
-        fetchUserProfile(data.user.id);
-        fetchAttendance(data.user.id, selectedDate);
-      }
-    };
-    
-    fetchUser();
-  }, []);
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('name')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching profile by user_id:', error);
-        return;
-      }
-      
-      if (data?.name) {
-        const firstName = data.name.split(' ')[0];
-        setUserName(firstName);
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
+    if (profile?.user_id) {
+      fetchAttendance(profile.user_id, selectedDate);
     }
-  };
+  }, [profile, selectedDate]);
 
   const fetchAttendance = async (userId: string, date: Date) => {
     try {
@@ -106,8 +78,8 @@ const Dashboard = () => {
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-    if (userId) {
-      fetchAttendance(userId, date);
+    if (profile?.user_id) {
+      fetchAttendance(profile.user_id, date);
     } else {
       setMealAttendance({
         id: '',
@@ -120,7 +92,7 @@ const Dashboard = () => {
   };
 
   const handleAttendance = async (meal: 'breakfast' | 'lunch' | 'snack', attend: boolean) => {
-    if (!userId || !isCurrentDay) return;
+    if (!profile?.user_id || !isCurrentDay) return;
     
     try {
       setIsLoading(true);
@@ -136,7 +108,7 @@ const Dashboard = () => {
       const { data, error: fetchError } = await supabase
         .from('meal_attendance')
         .select('*')
-        .eq('student_id', userId)
+        .eq('student_id', profile.user_id)
         .eq('date', formattedDate)
         .maybeSingle();
       
@@ -160,7 +132,7 @@ const Dashboard = () => {
         const { data: newData, error } = await supabase
           .from('meal_attendance')
           .insert({
-            student_id: userId,
+            student_id: profile.user_id,
             date: formattedDate,
             [meal]: attend,
           })
@@ -182,7 +154,7 @@ const Dashboard = () => {
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
       });
       
-      fetchAttendance(userId, selectedDate);
+      fetchAttendance(profile.user_id, selectedDate);
     } catch (error) {
       console.error('Error updating attendance:', error);
       toast({
@@ -191,7 +163,7 @@ const Dashboard = () => {
         variant: "destructive",
       });
       
-      fetchAttendance(userId, selectedDate);
+      fetchAttendance(profile.user_id, selectedDate);
     } finally {
       setIsLoading(false);
     }
@@ -216,42 +188,49 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white page-transition">
+    <div className="min-h-screen flex flex-col bg-background page-transition">
       <StatusBar />
       
-      <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+      <div className="flex justify-between items-center px-6 py-4 border-b border-border">
         <div className="flex items-center">
-          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-white"
-            >
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3 overflow-hidden">
+            {profile?.profile_image ? (
+              <img src={profile.profile_image} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary-foreground"
+              >
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            )}
           </div>
-          <h1 className="text-xl font-medium text-secondary">
-            Olá, {userName || 'Aluno(a)'}!
+          <h1 className="text-xl font-medium text-[#f45b43]">
+            Olá, {profile?.name ? profile.name.split(' ')[0] : 'Aluno(a)'}!
           </h1>
         </div>
         
-        <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
-          <Settings size={24} />
-        </Link>
+        <div className="flex items-center space-x-4">
+          <NotificationButton />
+          <Link to="/settings" className="text-primary hover:text-primary/80 transition-colors">
+            <Settings size={24} />
+          </Link>
+        </div>
       </div>
       
       <div className="p-6">
         <div className="flex items-center mb-3">
           <Calendar size={20} className="text-primary mr-2" />
-          <h2 className="text-lg font-medium text-gray-700">
+          <h2 className="text-lg font-medium text-foreground">
             {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
           </h2>
         </div>
@@ -262,8 +241,8 @@ const Dashboard = () => {
         />
       </div>
       
-      <div className="mx-6 mb-6 card-secondary">
-        <h2 className="text-lg font-medium text-white mb-4">
+      <div className="mx-6 mb-6 bg-primary text-primary-foreground rounded-xl shadow-sm p-4">
+        <h2 className="text-lg font-medium mb-4 text-white">
           {isCurrentDay ? "Confirme sua presença para as refeições:" : "Comparecimento:"}
         </h2>
         
@@ -290,7 +269,7 @@ const Dashboard = () => {
                   disabled={isLoading}
                   className={`py-2 rounded-md font-medium transition-all ${
                     mealAttendance.breakfast === false
-                      ? 'bg-accent text-primary'
+                      ? 'bg-[#f45b43] text-white'
                       : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
                 >
@@ -360,7 +339,7 @@ const Dashboard = () => {
                   disabled={isLoading}
                   className={`py-2 rounded-md font-medium transition-all ${
                     mealAttendance.lunch === false
-                      ? 'bg-accent text-primary'
+                      ? 'bg-[#f45b43] text-white'
                       : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
                 >
@@ -430,7 +409,7 @@ const Dashboard = () => {
                   disabled={isLoading}
                   className={`py-2 rounded-md font-medium transition-all ${
                     mealAttendance.snack === false
-                      ? 'bg-accent text-primary'
+                      ? 'bg-[#f45b43] text-white'
                       : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
                 >
@@ -507,11 +486,11 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {userId && activeMealType && mealAttendance.id && (
+      {profile?.user_id && activeMealType && mealAttendance.id && (
         <MealQRCode 
           open={showQRCode} 
           onOpenChange={setShowQRCode}
-          studentId={userId}
+          studentId={profile.user_id}
           date={format(selectedDate, 'yyyy-MM-dd')}
           mealType={activeMealType}
           attendanceId={mealAttendance.id}

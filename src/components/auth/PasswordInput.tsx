@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { EyeIcon, EyeOffIcon, Lock } from 'lucide-react';
 
@@ -25,7 +24,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
 
   return (
     <div className={`relative ${className}`}>
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#f45b43]">
         <Lock size={18} />
       </div>
       <input
@@ -34,7 +33,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="input-password pl-10 pr-10 w-full transition-all"
+        className={`input-password pl-10 pr-10 w-full transition-all shadow-md ${className}`}
       />
       <button
         type="button"

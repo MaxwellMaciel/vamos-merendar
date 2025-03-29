@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../../components/StatusBar';
@@ -6,21 +5,18 @@ import BackButton from '../../components/ui/BackButton';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Coffee } from 'lucide-react';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const DietaryRestrictionsSettings = () => {
+const EditDietaryRestrictions = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [hasRestriction, setHasRestriction] = useState<string>('no');
   const [restrictions, setRestrictions] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchRestrictions = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
@@ -28,8 +24,6 @@ const DietaryRestrictionsSettings = () => {
           navigate('/login');
           return;
         }
-        
-        setUserId(user.id);
         
         // Fetch current restrictions
         const { data, error } = await supabase
@@ -40,17 +34,11 @@ const DietaryRestrictionsSettings = () => {
         
         if (error) throw error;
         
-        if (data) {
-          const restrictions = data.dietary_restrictions;
-          if (restrictions && restrictions !== 'Nenhuma restrição alimentar') {
-            setHasRestriction('yes');
-            setRestrictions(restrictions);
-          } else {
-            setHasRestriction('no');
-          }
+        if (data && data.dietary_restrictions) {
+          setRestrictions(data.dietary_restrictions);
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error fetching dietary restrictions:', error);
         toast({
           title: "Erro",
           description: "Não foi possível carregar suas restrições alimentares.",
@@ -61,16 +49,16 @@ const DietaryRestrictionsSettings = () => {
       }
     };
     
-    fetchUserData();
+    fetchRestrictions();
   }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userId) {
+    if (!restrictions.trim()) {
       toast({
         title: "Erro",
-        description: "Você precisa estar logado para atualizar suas restrições.",
+        description: "Por favor, descreva suas restrições alimentares.",
         variant: "destructive",
       });
       return;
@@ -79,18 +67,23 @@ const DietaryRestrictionsSettings = () => {
     setLoading(true);
     
     try {
-      const restrictionsData = hasRestriction === 'yes' ? restrictions : 'Nenhuma restrição alimentar';
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/login');
+        return;
+      }
       
       // Update profile with dietary restrictions
       const { error } = await supabase.from('profiles').update({
-        dietary_restrictions: restrictionsData,
-      }).eq('id', userId);
+        dietary_restrictions: restrictions,
+      }).eq('id', user.id);
       
       if (error) throw error;
       
       toast({
         title: "Restrições alimentares atualizadas",
-        description: "Suas informações foram atualizadas com sucesso.",
+        description: "Suas restrições alimentares foram atualizadas com sucesso.",
       });
       
       navigate('/settings');
@@ -108,17 +101,17 @@ const DietaryRestrictionsSettings = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-white page-transition">
+      <div className="min-h-screen flex flex-col bg-background page-transition">
         <StatusBar />
         <div className="flex-1 flex items-center justify-center">
-          <p>Carregando...</p>
+          <p className="text-foreground">Carregando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white page-transition">
+    <div className="min-h-screen flex flex-col bg-background page-transition">
       <StatusBar />
       
       <div className="p-4">
@@ -132,52 +125,35 @@ const DietaryRestrictionsSettings = () => {
           </div>
         </div>
         
-        <h2 className="text-xl font-semibold text-center mb-6 text-gray-800">
-          Restrições Alimentares
+        <h2 className="text-xl font-semibold text-center mb-6 text-[#244b2c]">
+          Editar Restrições Alimentares
         </h2>
         
-        <p className="text-center text-gray-600 mb-6">
-          Informe se você possui alguma restrição alimentar para que possamos adaptar seu cardápio:
+        <p className="text-center text-muted-foreground mb-6">
+          Atualize suas restrições alimentares para que possamos adaptar seu cardápio:
         </p>
         
         <div className="w-full max-w-md mx-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <RadioGroup 
-              defaultValue="no" 
-              value={hasRestriction}
-              onValueChange={setHasRestriction}
-              className="flex flex-col space-y-3"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="no" id="no-restrictions" />
-                <Label htmlFor="no-restrictions">Não tenho restrições alimentares</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="yes" id="has-restrictions" />
-                <Label htmlFor="has-restrictions">Tenho restrições alimentares</Label>
-              </div>
-            </RadioGroup>
-            
-            {hasRestriction === 'yes' && (
-              <div className="animate-in fade-in duration-200">
-                <Label htmlFor="restrictions" className="block mb-2">
-                  Descreva suas restrições alimentares:
-                </Label>
-                <Textarea
-                  id="restrictions"
-                  placeholder="Ex: Intolerância à lactose, alergia a nozes, vegetariano, etc."
-                  value={restrictions}
-                  onChange={(e) => setRestrictions(e.target.value)}
-                  className="resize-none h-32"
-                />
-              </div>
-            )}
+            <div>
+              <Label htmlFor="restrictions" className="block mb-2 text-[#244b2c]">
+                Suas restrições alimentares:
+              </Label>
+              <Textarea
+                id="restrictions"
+                placeholder="Ex: Intolerância à lactose, alergia a nozes, vegetariano, etc."
+                value={restrictions}
+                onChange={(e) => setRestrictions(e.target.value)}
+                className="resize-none h-32 bg-white/30 shadow-md"
+                required
+              />
+            </div>
             
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading || (hasRestriction === 'yes' && !restrictions.trim())}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg transition-colors mb-3"
+                disabled={loading || !restrictions.trim()}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Salvando...' : 'Salvar Alterações'}
               </button>
@@ -185,7 +161,7 @@ const DietaryRestrictionsSettings = () => {
               <button
                 type="button"
                 onClick={() => navigate('/settings')}
-                className="w-full border border-gray-300 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50 transition-colors"
+                className="w-full border border-border text-foreground font-medium py-3 rounded-lg hover:bg-muted transition-colors"
               >
                 Cancelar
               </button>
@@ -197,4 +173,4 @@ const DietaryRestrictionsSettings = () => {
   );
 };
 
-export default DietaryRestrictionsSettings;
+export default EditDietaryRestrictions; 

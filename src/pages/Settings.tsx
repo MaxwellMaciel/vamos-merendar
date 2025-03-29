@@ -1,143 +1,187 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../components/StatusBar';
 import BackButton from '../components/ui/BackButton';
 import ProfileMenuItem from '../components/profile/ProfileMenuItem';
-import { LockKeyhole, User, LogOut, Shield, Coffee, Info, HelpCircle } from 'lucide-react';
+import { LockKeyhole, User, LogOut, Shield, Coffee, Info, HelpCircle, Calendar, Palette } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useProfile } from '@/hooks/use-profile';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [userName, setUserName] = useState<string>('');
-  const [userEmail, setUserEmail] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+  const { profile, loading } = useProfile();
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        setLoading(true);
-        
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('name, email')
-            .eq('id', user.id)
-            .single();
-          
-          if (error) throw error;
-          
-          if (data) {
-            setUserName(data.name || '');
-            setUserEmail(data.email || user.email || '');
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const getDashboardPath = () => {
+    if (loading || !profile) return '/aluno/dashboard';
     
-    fetchUserProfile();
-  }, []);
+    switch (profile.user_type) {
+      case 'nutricionista':
+        return '/nutricionista/dashboard';
+      case 'professor':
+        return '/professor/dashboard';
+      default:
+        return '/aluno/dashboard';
+    }
+  };
 
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      
       if (error) throw error;
-      
-      toast({
-        title: "Logout realizado",
-        description: "Você foi desconectado com sucesso.",
-      });
-      
       navigate('/login');
     } catch (error: any) {
-      console.error('Error during logout:', error);
+      console.error('Error logging out:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível sair da conta.",
+        title: "Erro ao sair",
+        description: "Não foi possível fazer logout.",
         variant: "destructive",
       });
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <StatusBar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 page-transition">
+    <div className="min-h-screen flex flex-col bg-background">
       <StatusBar />
       
-      <div className="p-4 bg-white border-b border-gray-200">
-        <BackButton to="/aluno/dashboard" />
+      <div className="px-4 -mt-4">
+        <BackButton 
+          to={getDashboardPath()}
+          className="text-primary" 
+        />
       </div>
-      
-      <div className="bg-primary p-6 text-white">
-        <div className="flex items-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
-            <User size={32} className="text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">{loading ? 'Carregando...' : userName}</h2>
-            <p className="text-white/80">{loading ? '' : userEmail}</p>
+
+      <div className="px-4 w-full max-w-7xl mx-auto mt-2">
+        <div className="bg-primary rounded-[32px] text-primary-foreground relative overflow-hidden shadow-lg -mt-2">
+          <div className="absolute inset-0 bg-[url('/patterns/topography.svg')] opacity-5" />
+          
+          <div className="relative px-8 py-6">
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <Avatar className="w-24 h-24 md:w-32 md:h-32">
+                  {profile?.profile_image ? (
+                    <AvatarImage 
+                      src={profile.profile_image} 
+                      alt="Profile" 
+                      className="object-cover rounded-2xl"
+                      onError={(e) => {
+                        console.error('Error loading profile image:', e);
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = '';
+                      }}
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-white/5 rounded-2xl">
+                      <User size={40} className="text-primary-foreground" />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 md:w-9 md:h-9 bg-emerald-500 rounded-full flex items-center justify-center ring-2 ring-white">
+                  <User size={14} className="text-white md:w-5 md:h-5" />
+                </div>
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl md:text-2xl font-bold mb-2 text-white truncate">
+                  {loading ? 'Carregando...' : profile?.name || 'Nome não disponível'}
+                </h2>
+                <div className="space-y-1 text-emerald-50/90">
+                  <p className="flex items-center text-sm md:text-base font-medium">
+                    <span className="truncate">
+                      {loading ? '' : 
+                        profile?.user_type === 'aluno' ? 
+                          (profile?.matricula || 'Matrícula não disponível') : 
+                          (profile?.siape || 'SIAPE não disponível')}
+                    </span>
+                  </p>
+                  <p className="flex items-center text-sm md:text-base font-medium truncate">
+                    {loading ? '' : profile?.email || 'Email não disponível'}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
       <div className="flex-1 p-4">
-        <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
-          <h3 className="p-4 text-sm font-medium text-gray-500 uppercase border-b border-gray-100">
-            Sua Conta
-          </h3>
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="bg-card text-card-foreground rounded-2xl shadow-lg mb-4 overflow-hidden">
+            <h3 className="p-4 md:p-6 text-sm md:text-base font-medium text-muted-foreground uppercase border-b border-border">
+              Sua Conta
+            </h3>
+            
+            <ProfileMenuItem
+              label="Dados Pessoais"
+              to="/settings/personal"
+              icon={<User size={18} className="text-primary md:w-6 md:h-6" />}
+            />
+            
+            <ProfileMenuItem
+              label="Alterar Senha"
+              to="/settings/password"
+              icon={<LockKeyhole size={18} className="text-primary md:w-6 md:h-6" />}
+            />
+            
+            <ProfileMenuItem
+              label="Restrições Alimentares"
+              to="/settings/dietary-restrictions"
+              icon={<Coffee size={18} className="text-primary md:w-6 md:h-6" />}
+            />
+
+            <ProfileMenuItem
+              label="Tema"
+              to="/settings/theme"
+              icon={<Palette size={18} className="text-primary md:w-6 md:h-6" />}
+            />
+
+            <ProfileMenuItem
+              label="Diário de Presença"
+              to="/settings/attendance"
+              icon={<Calendar size={18} className="text-primary md:w-6 md:h-6" />}
+            />
+          </div>
           
-          <ProfileMenuItem
-            label="Dados Pessoais"
-            to="/settings/personal"
-            icon={<User size={18} className="text-primary" />}
-          />
+          <div className="bg-card text-card-foreground rounded-2xl shadow-lg mb-4 overflow-hidden">
+            <h3 className="p-4 md:p-6 text-sm md:text-base font-medium text-muted-foreground uppercase border-b border-border">
+              Informações
+            </h3>
+            
+            <ProfileMenuItem
+              label="Sobre o Aplicativo"
+              to="/about"
+              icon={<Info size={18} className="text-primary md:w-6 md:h-6" />}
+            />
+            
+            <ProfileMenuItem
+              label="Ajuda e Suporte"
+              to="/help"
+              icon={<HelpCircle size={18} className="text-primary md:w-6 md:h-6" />}
+            />
+          </div>
           
-          <ProfileMenuItem
-            label="Alterar Senha"
-            to="/settings/password"
-            icon={<LockKeyhole size={18} className="text-primary" />}
-          />
-          
-          <ProfileMenuItem
-            label="Restrições Alimentares"
-            to="/settings/restrictions"
-            icon={<Coffee size={18} className="text-primary" />}
-          />
+          <button
+            onClick={handleLogout}
+            className="w-full mt-4 bg-card border border-red-500 text-red-500 font-medium py-3 md:py-4 rounded-lg hover:bg-red-50/10 transition-colors flex items-center justify-center text-sm md:text-base"
+          >
+            <LogOut size={18} className="mr-2 md:w-6 md:h-6" />
+            <span>Sair da conta</span>
+          </button>
         </div>
-        
-        <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
-          <h3 className="p-4 text-sm font-medium text-gray-500 uppercase border-b border-gray-100">
-            Informações
-          </h3>
-          
-          <ProfileMenuItem
-            label="Sobre o Aplicativo"
-            to="/about"
-            icon={<Info size={18} className="text-primary" />}
-          />
-          
-          <ProfileMenuItem
-            label="Ajuda e Suporte"
-            to="/help"
-            icon={<HelpCircle size={18} className="text-primary" />}
-          />
-        </div>
-        
-        <button
-          onClick={handleLogout}
-          className="w-full mt-4 bg-white border border-red-500 text-red-500 font-medium py-3 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center"
-        >
-          <LogOut size={18} className="mr-2" />
-          <span>Sair da conta</span>
-        </button>
       </div>
     </div>
   );

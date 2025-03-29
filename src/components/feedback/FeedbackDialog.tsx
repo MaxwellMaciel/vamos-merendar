@@ -154,42 +154,42 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md">
+      <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md bg-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-primary">Deixe seu comentário</DialogTitle>
         </DialogHeader>
         
         <Tabs defaultValue={initialMealType} value={mealType} onValueChange={(value) => setMealType(value as any)}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 gap-2 p-1 mb-2">
             <TabsTrigger 
               value="breakfast" 
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#f45b43] data-[state=active]:text-white"
               disabled={!enabledMeals.breakfast}
             >
-              <Coffee size={16} />
-              <span>Café</span>
+              <Coffee size={18} />
+              <span className="text-sm">Café</span>
             </TabsTrigger>
             <TabsTrigger 
               value="lunch" 
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#f45b43] data-[state=active]:text-white"
               disabled={!enabledMeals.lunch}
             >
-              <UtensilsCrossed size={16} />
-              <span>Almoço</span>
+              <UtensilsCrossed size={18} />
+              <span className="text-sm">Almoço</span>
             </TabsTrigger>
             <TabsTrigger 
               value="snack" 
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#f45b43] data-[state=active]:text-white"
               disabled={!enabledMeals.snack}
             >
-              <Cookie size={16} />
-              <span>Lanche</span>
+              <Cookie size={18} />
+              <span className="text-sm">Lanche</span>
             </TabsTrigger>
           </TabsList>
           
           <form onSubmit={handleSubmit} className="mt-4">
             <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+              <div className="bg-white p-4 rounded-lg border border-gray-100">
                 <div className="flex gap-4 mb-3">
                   <button 
                     type="button"
@@ -226,7 +226,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-2 rounded-md transition-colors"
+                className="w-full bg-[#f45b43] hover:bg-[#f45b43]/90 text-white font-medium py-2 rounded-md transition-colors"
               >
                 {isSubmitting ? 'Enviando...' : 'Enviar Feedback'}
               </button>

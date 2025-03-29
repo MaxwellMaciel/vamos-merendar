@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../../components/StatusBar';
@@ -108,7 +107,7 @@ const FeedbackReview = () => {
           <button onClick={() => navigate(-1)} className="mr-3">
             <ArrowLeft size={24} className="text-primary" />
           </button>
-          <h1 className="text-xl font-medium text-secondary">Feedback dos Alunos</h1>
+          <h1 className="text-xl font-medium text-[#244b2c]">Feedback dos Alunos</h1>
         </div>
         
         <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
@@ -119,11 +118,17 @@ const FeedbackReview = () => {
       <div className="p-6">
         <Tabs defaultValue="comments" onValueChange={(value) => setActiveTab(value as 'comments' | 'suggestions')}>
           <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="comments" className="flex items-center justify-center gap-2">
+            <TabsTrigger 
+              value="comments" 
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-[#f45b43] data-[state=active]:text-white rounded-xl"
+            >
               <MessageSquare size={16} />
               <span>Comentários</span>
             </TabsTrigger>
-            <TabsTrigger value="suggestions" className="flex items-center justify-center gap-2">
+            <TabsTrigger 
+              value="suggestions" 
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-[#f45b43] data-[state=active]:text-white rounded-xl"
+            >
               <Lightbulb size={16} />
               <span>Sugestões</span>
             </TabsTrigger>
