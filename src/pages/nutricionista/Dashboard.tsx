@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
-import { Calendar, Utensils, PieChart, Edit, MessageSquare, Settings } from 'lucide-react';
+import { Calendar, Utensils, PieChart, Edit, MessageSquare, Settings, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import NotificationButton from '@/components/ui/NotificationButton';
-import { useProfile } from '@/hooks/use-profile';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/types/supabase';
+import { useNotifications } from '../../contexts/NotificationContext';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const { profile } = useProfile();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [meals, setMeals] = useState([
     {
       id: 1,
@@ -34,6 +39,31 @@ const Dashboard = () => {
       confirmedCount: 42,
     },
   ]);
+  const { unreadCount } = useNotifications();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) throw error;
+        setProfile(data);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -46,6 +76,17 @@ const Dashboard = () => {
     newMeals[2].confirmedCount = 40 + (day % 8);
     setMeals(newMeals);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-white">
+        <StatusBar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white page-transition">

@@ -13,6 +13,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile, loading } = useProfile();
+  const isNutricionista = profile?.user_type === 'nutricionista';
 
   const getDashboardPath = () => {
     if (loading || !profile) return '/aluno/dashboard';
@@ -149,11 +150,13 @@ const Settings = () => {
               icon={<Palette size={18} className="text-primary md:w-6 md:h-6" />}
             />
 
-            <ProfileMenuItem
-              label="Diário de Presença"
-              to="/settings/attendance"
-              icon={<Calendar size={18} className="text-primary md:w-6 md:h-6" />}
-            />
+            {isNutricionista && (
+              <ProfileMenuItem
+                label="Diário de Presença"
+                to="/nutricionista/attendance"
+                icon={<Calendar size={18} className="text-primary md:w-6 md:h-6" />}
+              />
+            )}
           </div>
           
           <div className="bg-card text-card-foreground rounded-2xl shadow-lg mb-4 overflow-hidden">

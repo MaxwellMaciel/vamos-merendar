@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { MapPin, Bell, Book, Calendar, Edit, Check } from 'lucide-react';
+import { MapPin, Bell, Book, Calendar, Edit, Check, UtensilsCrossed } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -10,7 +9,7 @@ export interface Notification {
   title: string;
   description: string;
   date: Date;
-  type: 'attendance' | 'class' | 'menu' | 'register' | 'complete';
+  type: 'attendance' | 'class' | 'menu' | 'register' | 'complete' | 'meal_attendance';
   read: boolean;
 }
 
@@ -37,6 +36,8 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
         return <Edit className="text-secondary" />;
       case 'complete':
         return <Check className="text-secondary" />;
+      case 'meal_attendance':
+        return <UtensilsCrossed className="text-secondary" />;
       default:
         return <Bell className="text-secondary" />;
     }

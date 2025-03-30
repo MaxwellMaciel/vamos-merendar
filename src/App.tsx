@@ -1,8 +1,6 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
@@ -30,6 +28,7 @@ import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import Notifications from "./pages/Notifications";
 import { NotificationProvider } from "./contexts/NotificationContext";
+import NutricionistaNotifications from './pages/nutricionista/Notifications';
 
 const queryClient = new QueryClient();
 
@@ -38,8 +37,6 @@ const App = () => (
     <ThemeProvider>
       <TooltipProvider>
         <NotificationProvider>
-          <Toaster />
-          <Sonner />
           <BrowserRouter>
             <Routes>
               {/* Auth routes */}
@@ -55,8 +52,11 @@ const App = () => (
               
               {/* Dashboard routes */}
               <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
+              <Route path="/aluno/notifications" element={<Notifications />} />
               <Route path="/professor/dashboard" element={<ProfessorDashboard />} />
+              <Route path="/professor/notifications" element={<Notifications />} />
               <Route path="/nutricionista/dashboard" element={<NutricionistaDashboard />} />
+              <Route path="/nutricionista/notifications" element={<NutricionistaNotifications />} />
               <Route path="/nutricionista/menu" element={<NutricionistaWeeklyMenu />} />
               <Route path="/nutricionista/feedback" element={<NutricionistaFeedback />} />
               
@@ -72,10 +72,9 @@ const App = () => (
               {/* Info routes */}
               <Route path="/about" element={<About />} />
               <Route path="/help" element={<Help />} />
-              <Route path="/notifications" element={<Notifications />} />
               
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
+              {/* Rota padrão */}
+              <Route path="/" element={<Navigate to="/login" replace />} />
             </Routes>
           </BrowserRouter>
         </NotificationProvider>

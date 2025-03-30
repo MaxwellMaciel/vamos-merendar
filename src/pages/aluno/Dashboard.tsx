@@ -4,7 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
 import MealCard from '../../components/meals/MealCard';
-import { Calendar, Utensils, QrCode, MessageSquare, Settings } from 'lucide-react';
+import { Calendar, Utensils, QrCode, MessageSquare, Settings, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,10 +12,12 @@ import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 import MealQRCode from '@/components/qrcode/MealQRCode';
 import { useProfile } from '@/hooks/use-profile';
 import NotificationButton from '@/components/ui/NotificationButton';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 const Dashboard = () => {
   const { toast } = useToast();
   const { profile, loading: profileLoading } = useProfile();
+  const { addNotification, unreadCount } = useNotifications();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [mealAttendance, setMealAttendance] = useState({
     id: '',
@@ -149,6 +151,13 @@ const Dashboard = () => {
         }
       }
       
+      addNotification({
+        title: attend ? "Presença confirmada" : "Ausência registrada",
+        description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
+        date: new Date(),
+        type: 'meal_attendance'
+      });
+      
       toast({
         title: attend ? "Presença confirmada" : "Ausência registrada",
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
@@ -220,7 +229,9 @@ const Dashboard = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <NotificationButton />
+          <div className="ml-4">
+            <NotificationButton />
+          </div>
           <Link to="/settings" className="text-primary hover:text-primary/80 transition-colors">
             <Settings size={24} />
           </Link>
@@ -241,248 +252,253 @@ const Dashboard = () => {
         />
       </div>
       
-      <div className="mx-6 mb-6 bg-primary text-primary-foreground rounded-xl shadow-sm p-4">
-        <h2 className="text-lg font-medium mb-4 text-white">
-          {isCurrentDay ? "Confirme sua presença para as refeições:" : "Comparecimento:"}
-        </h2>
-        
-        <div className="space-y-4">
-          <div className="bg-white/10 rounded-lg p-3">
-            <h3 className="text-white font-medium mb-2">Café da Manhã</h3>
-            
-            {isCurrentDay ? (
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleAttendance('breakfast', true)}
-                  disabled={isLoading}
-                  className={`py-2 rounded-md font-medium transition-all ${
-                    mealAttendance.breakfast === true
-                      ? 'bg-red-500 text-white'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Sim
-                </button>
-                
-                <button
-                  onClick={() => handleAttendance('breakfast', false)}
-                  disabled={isLoading}
-                  className={`py-2 rounded-md font-medium transition-all ${
-                    mealAttendance.breakfast === false
-                      ? 'bg-[#f45b43] text-white'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Não
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <div 
-                  className={`w-3 h-3 rounded-full mr-2 ${
-                    mealAttendance.breakfast === true 
-                      ? 'bg-green-500' 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-6 mb-6">
+        <div className="bg-primary text-primary-foreground rounded-xl shadow-sm p-4">
+          <h2 className="text-lg font-medium mb-4 text-white">
+            {isCurrentDay ? "Confirme sua presença para as refeições:" : "Comparecimento:"}
+          </h2>
+          
+          <div className="space-y-4">
+            <div className="bg-white/10 rounded-lg p-3">
+              <h3 className="text-white font-medium mb-2">Café da Manhã</h3>
+              
+              {isCurrentDay ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAttendance('breakfast', true)}
+                    disabled={isLoading}
+                    className={`py-2 rounded-md font-medium transition-all ${
+                      mealAttendance.breakfast === true
+                        ? 'bg-red-500 text-white'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Sim
+                  </button>
+                  
+                  <button
+                    onClick={() => handleAttendance('breakfast', false)}
+                    disabled={isLoading}
+                    className={`py-2 rounded-md font-medium transition-all ${
+                      mealAttendance.breakfast === false
+                        ? 'bg-[#f45b43] text-white'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Não
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <div 
+                    className={`w-3 h-3 rounded-full mr-2 ${
+                      mealAttendance.breakfast === true 
+                        ? 'bg-green-500' 
+                        : mealAttendance.breakfast === false 
+                        ? 'bg-red-500' 
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                  <span className="text-white">
+                    {mealAttendance.breakfast === true 
+                      ? 'Compareceu' 
                       : mealAttendance.breakfast === false 
-                      ? 'bg-red-500' 
-                      : 'bg-gray-300'
-                  }`}
-                />
-                <span className="text-white">
-                  {mealAttendance.breakfast === true 
-                    ? 'Compareceu' 
-                    : mealAttendance.breakfast === false 
-                    ? 'Não compareceu' 
-                    : 'Não registrado'}
-                </span>
-              </div>
-            )}
+                      ? 'Não compareceu' 
+                      : 'Não registrado'}
+                  </span>
+                </div>
+              )}
+              
+              {mealAttendance.breakfast === true && (
+                <div className="mt-3 flex gap-2">
+                  <button 
+                    onClick={() => handleShowQRCode('breakfast')}
+                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                  >
+                    <QrCode size={16} />
+                    <span>QR Code</span>
+                  </button>
+                  <button 
+                    onClick={() => handleShowFeedback('breakfast')}
+                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                  >
+                    <MessageSquare size={16} />
+                    <span>Comentário</span>
+                  </button>
+                </div>
+              )}
+            </div>
             
-            {mealAttendance.breakfast === true && (
-              <div className="mt-3 flex gap-2">
-                <button 
-                  onClick={() => handleShowQRCode('breakfast')}
-                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                >
-                  <QrCode size={16} />
-                  <span>QR Code</span>
-                </button>
-                <button 
-                  onClick={() => handleShowFeedback('breakfast')}
-                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                >
-                  <MessageSquare size={16} />
-                  <span>Comentário</span>
-                </button>
-              </div>
-            )}
-          </div>
-          
-          <div className="bg-white/10 rounded-lg p-3">
-            <h3 className="text-white font-medium mb-2">Almoço</h3>
-            
-            {isCurrentDay ? (
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleAttendance('lunch', true)}
-                  disabled={isLoading}
-                  className={`py-2 rounded-md font-medium transition-all ${
-                    mealAttendance.lunch === true
-                      ? 'bg-red-500 text-white'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Sim
-                </button>
-                
-                <button
-                  onClick={() => handleAttendance('lunch', false)}
-                  disabled={isLoading}
-                  className={`py-2 rounded-md font-medium transition-all ${
-                    mealAttendance.lunch === false
-                      ? 'bg-[#f45b43] text-white'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Não
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <div 
-                  className={`w-3 h-3 rounded-full mr-2 ${
-                    mealAttendance.lunch === true 
-                      ? 'bg-green-500' 
+            <div className="bg-white/10 rounded-lg p-3">
+              <h3 className="text-white font-medium mb-2">Almoço</h3>
+              
+              {isCurrentDay ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAttendance('lunch', true)}
+                    disabled={isLoading}
+                    className={`py-2 rounded-md font-medium transition-all ${
+                      mealAttendance.lunch === true
+                        ? 'bg-red-500 text-white'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Sim
+                  </button>
+                  
+                  <button
+                    onClick={() => handleAttendance('lunch', false)}
+                    disabled={isLoading}
+                    className={`py-2 rounded-md font-medium transition-all ${
+                      mealAttendance.lunch === false
+                        ? 'bg-[#f45b43] text-white'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Não
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <div 
+                    className={`w-3 h-3 rounded-full mr-2 ${
+                      mealAttendance.lunch === true 
+                        ? 'bg-green-500' 
+                        : mealAttendance.lunch === false 
+                        ? 'bg-red-500' 
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                  <span className="text-white">
+                    {mealAttendance.lunch === true 
+                      ? 'Compareceu' 
                       : mealAttendance.lunch === false 
-                      ? 'bg-red-500' 
-                      : 'bg-gray-300'
-                  }`}
-                />
-                <span className="text-white">
-                  {mealAttendance.lunch === true 
-                    ? 'Compareceu' 
-                    : mealAttendance.lunch === false 
-                    ? 'Não compareceu' 
-                    : 'Não registrado'}
-                </span>
-              </div>
-            )}
+                      ? 'Não compareceu' 
+                      : 'Não registrado'}
+                  </span>
+                </div>
+              )}
+              
+              {mealAttendance.lunch === true && (
+                <div className="mt-3 flex gap-2">
+                  <button 
+                    onClick={() => handleShowQRCode('lunch')}
+                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                  >
+                    <QrCode size={16} />
+                    <span>QR Code</span>
+                  </button>
+                  <button 
+                    onClick={() => handleShowFeedback('lunch')}
+                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                  >
+                    <MessageSquare size={16} />
+                    <span>Comentário</span>
+                  </button>
+                </div>
+              )}
+            </div>
             
-            {mealAttendance.lunch === true && (
-              <div className="mt-3 flex gap-2">
-                <button 
-                  onClick={() => handleShowQRCode('lunch')}
-                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                >
-                  <QrCode size={16} />
-                  <span>QR Code</span>
-                </button>
-                <button 
-                  onClick={() => handleShowFeedback('lunch')}
-                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                >
-                  <MessageSquare size={16} />
-                  <span>Comentário</span>
-                </button>
-              </div>
-            )}
-          </div>
-          
-          <div className="bg-white/10 rounded-lg p-3">
-            <h3 className="text-white font-medium mb-2">Lanche da Tarde</h3>
-            
-            {isCurrentDay ? (
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleAttendance('snack', true)}
-                  disabled={isLoading}
-                  className={`py-2 rounded-md font-medium transition-all ${
-                    mealAttendance.snack === true
-                      ? 'bg-red-500 text-white'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Sim
-                </button>
-                
-                <button
-                  onClick={() => handleAttendance('snack', false)}
-                  disabled={isLoading}
-                  className={`py-2 rounded-md font-medium transition-all ${
-                    mealAttendance.snack === false
-                      ? 'bg-[#f45b43] text-white'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Não
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <div 
-                  className={`w-3 h-3 rounded-full mr-2 ${
-                    mealAttendance.snack === true 
-                      ? 'bg-green-500' 
+            <div className="bg-white/10 rounded-lg p-3">
+              <h3 className="text-white font-medium mb-2">Lanche da Tarde</h3>
+              
+              {isCurrentDay ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAttendance('snack', true)}
+                    disabled={isLoading}
+                    className={`py-2 rounded-md font-medium transition-all ${
+                      mealAttendance.snack === true
+                        ? 'bg-red-500 text-white'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Sim
+                  </button>
+                  
+                  <button
+                    onClick={() => handleAttendance('snack', false)}
+                    disabled={isLoading}
+                    className={`py-2 rounded-md font-medium transition-all ${
+                      mealAttendance.snack === false
+                        ? 'bg-[#f45b43] text-white'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Não
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <div 
+                    className={`w-3 h-3 rounded-full mr-2 ${
+                      mealAttendance.snack === true 
+                        ? 'bg-green-500' 
+                        : mealAttendance.snack === false 
+                        ? 'bg-red-500' 
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                  <span className="text-white">
+                    {mealAttendance.snack === true 
+                      ? 'Compareceu' 
                       : mealAttendance.snack === false 
-                      ? 'bg-red-500' 
-                      : 'bg-gray-300'
-                  }`}
-                />
-                <span className="text-white">
-                  {mealAttendance.snack === true 
-                    ? 'Compareceu' 
-                    : mealAttendance.snack === false 
-                    ? 'Não compareceu' 
-                    : 'Não registrado'}
-                </span>
-              </div>
-            )}
-            
-            {mealAttendance.snack === true && (
-              <div className="mt-3 flex gap-2">
-                <button 
-                  onClick={() => handleShowQRCode('snack')}
-                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                >
-                  <QrCode size={16} />
-                  <span>QR Code</span>
-                </button>
-                <button 
-                  onClick={() => handleShowFeedback('snack')}
-                  className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                >
-                  <MessageSquare size={16} />
-                  <span>Comentário</span>
-                </button>
-              </div>
-            )}
+                      ? 'Não compareceu' 
+                      : 'Não registrado'}
+                  </span>
+                </div>
+              )}
+              
+              {mealAttendance.snack === true && (
+                <div className="mt-3 flex gap-2">
+                  <button 
+                    onClick={() => handleShowQRCode('snack')}
+                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                  >
+                    <QrCode size={16} />
+                    <span>QR Code</span>
+                  </button>
+                  <button 
+                    onClick={() => handleShowFeedback('snack')}
+                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
+                  >
+                    <MessageSquare size={16} />
+                    <span>Comentário</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="flex mx-6 gap-4 mb-6">
-        <div className="flex-1 bg-primary rounded-xl p-4 shadow-sm">
-          <div className="flex items-center mb-3">
-            <Utensils size={20} className="text-white mr-2" />
-            <h2 className="text-lg font-medium text-white">Refeições do dia</h2>
+        
+        <div className="bg-primary rounded-xl p-4 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Utensils size={24} className="text-white mr-2" />
+            <h2 className="text-xl lg:text-2xl font-medium text-white">Refeições do dia</h2>
           </div>
           
-          <MealCard
-            title="Lanche (MANHÃ)"
-            description="Pão, manteiga, café com leite"
-            type="breakfast"
-          />
-          
-          <MealCard
-            title="Almoço"
-            description="Arroz, feijão, carne, salada"
-            type="lunch"
-          />
-          
-          <MealCard
-            title="Lanche (TARDE)"
-            description="Suco de laranja, bolo de chocolate"
-            type="dinner"
-          />
+          <div className="space-y-4">
+            <MealCard
+              title="Café da Manhã"
+              description="Pão, manteiga, café com leite"
+              type="breakfast"
+              className="lg:p-4"
+            />
+            
+            <MealCard
+              title="Almoço"
+              description="Arroz, feijão, carne, salada"
+              type="lunch"
+              className="lg:p-4"
+            />
+            
+            <MealCard
+              title="Lanche da Tarde"
+              description="Suco de laranja, bolo de chocolate"
+              type="dinner"
+              className="lg:p-4"
+            />
+          </div>
         </div>
       </div>
       

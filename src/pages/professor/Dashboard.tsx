@@ -58,7 +58,7 @@ const ClassScheduleCard = ({ selectedDate }: { selectedDate: Date }) => {
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const { toggleNotifications, unreadCount } = useNotifications();
+  const { unreadCount } = useNotifications();
   
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);

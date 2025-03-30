@@ -1,21 +1,22 @@
-
 import React from 'react';
 import { Utensils } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MealCardProps {
   title: string;
   description: string;
   type: 'breakfast' | 'lunch' | 'dinner';
+  className?: string;
 }
 
-const MealCard: React.FC<MealCardProps> = ({ title, description, type }) => {
+const MealCard: React.FC<MealCardProps> = ({ title, description, type, className }) => {
   return (
-    <div className="mb-3 animate-in fade-in">
-      <div className="flex items-center gap-2 mb-1">
-        <Utensils size={16} className="text-white" />
-        <h3 className="text-white font-medium">{title}:</h3>
+    <div className={cn("mb-3 animate-in fade-in bg-white/10 rounded-lg p-3", className)}>
+      <div className="flex items-center gap-2 mb-2">
+        <Utensils size={20} className="text-white" />
+        <h3 className="text-white font-medium text-base lg:text-lg">{title}</h3>
       </div>
-      <p className="text-white/80 text-sm ml-6">{description}</p>
+      <p className="text-white/90 text-sm lg:text-base ml-8">{description}</p>
     </div>
   );
 };
