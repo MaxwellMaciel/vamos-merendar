@@ -287,7 +287,7 @@ const Notifications = () => {
                 e.stopPropagation();
                 deleteNotification(notification.id);
               }}
-              className="ml-4 text-red-500 hover:text-red-600 transition-colors"
+              className="ml-4 text-[#f45b43] hover:text-[#f45b43]/80 transition-colors"
             >
               <Trash2 size={20} />
             </button>

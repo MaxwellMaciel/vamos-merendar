@@ -29,7 +29,7 @@ const NotificationButton = ({ className = '' }: NotificationButtonProps) => {
     <Link to={getNotificationPath()} className={`relative flex items-center ${className}`}>
       <Bell size={24} className="text-primary hover:text-primary/80 transition-colors" />
       {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+        <span className="absolute -top-1 -right-1 bg-[#f45b43] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
           {unreadCount}
         </span>
       )}

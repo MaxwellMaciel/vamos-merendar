@@ -58,6 +58,15 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   }, [open]);
 
   const getEnabledMeals = () => {
+    // Se for sugestão, todas as refeições estão habilitadas
+    if (feedbackType === 'suggestion') {
+      return {
+        breakfast: true,
+        lunch: true,
+        snack: true
+      };
+    }
+    // Se for comentário, só habilita as refeições com presença confirmada
     return {
       breakfast: attendance.breakfast === true,
       lunch: attendance.lunch === true,
@@ -82,10 +91,9 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   React.useEffect(() => {
     if (open) {
       setMealType(getInitialMealType());
-      setFeedbackType('comment');
       setContent('');
     }
-  }, [open, attendance, selectedMealType]);
+  }, [open, attendance, selectedMealType, feedbackType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,25 +149,42 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   };
 
   const enabledMeals = getEnabledMeals();
-  const initialMealType = getInitialMealType();
-  
-  const hasConfirmedMeal = 
-    attendance.breakfast === true || 
-    attendance.lunch === true || 
-    attendance.snack === true;
-
-  if (!hasConfirmedMeal) {
-    return null;
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md bg-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-primary">Deixe seu comentário</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-primary">
+            {feedbackType === 'comment' ? 'Deixe seu comentário' : 'Faça uma sugestão'}
+          </DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue={initialMealType} value={mealType} onValueChange={(value) => setMealType(value as any)}>
+        <div className="flex gap-4 mb-3">
+          <button 
+            type="button"
+            onClick={() => setFeedbackType('comment')}
+            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+              feedbackType === 'comment' 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Comentário
+          </button>
+          <button 
+            type="button"
+            onClick={() => setFeedbackType('suggestion')}
+            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+              feedbackType === 'suggestion' 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Sugestão
+          </button>
+        </div>
+        
+        <Tabs defaultValue={mealType} value={mealType} onValueChange={(value) => setMealType(value as any)}>
           <TabsList className="grid w-full grid-cols-3 gap-2 p-1 mb-2">
             <TabsTrigger 
               value="breakfast" 
@@ -190,31 +215,6 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
           <form onSubmit={handleSubmit} className="mt-4">
             <div className="space-y-4">
               <div className="bg-white p-4 rounded-lg border border-gray-100">
-                <div className="flex gap-4 mb-3">
-                  <button 
-                    type="button"
-                    onClick={() => setFeedbackType('comment')}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                      feedbackType === 'comment' 
-                        ? 'bg-primary text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    Comentário
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setFeedbackType('suggestion')}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                      feedbackType === 'suggestion' 
-                        ? 'bg-primary text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    Sugestão
-                  </button>
-                </div>
-                
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
