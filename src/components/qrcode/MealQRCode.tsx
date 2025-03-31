@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import QRCode from 'react-qr-code';
 import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
 import { useMealQR } from '@/hooks/use-meal-qr';
+import Loading from '@/components/Loading';
 
 interface MealQRCodeProps {
   open: boolean;
@@ -53,15 +54,7 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
   }) : '';
 
   if (loading) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md bg-white">
-          <div className="flex justify-center py-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
+    return <Loading message="Gerando QR Code..." />;
   }
 
   return (

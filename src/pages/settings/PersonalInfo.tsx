@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/use-profile';
+import Loading from '@/components/Loading';
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
@@ -119,11 +120,7 @@ const PersonalInfo = () => {
   };
 
   if (profileLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <Loading message="Carregando informações pessoais..." />;
   }
 
   return (

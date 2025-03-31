@@ -4,15 +4,26 @@ import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
 import MealCard from '../../components/meals/MealCard';
-import { Calendar, Utensils, QrCode, MessageSquare, Settings, Bell } from 'lucide-react';
+import { Calendar, Utensils, QrCode, MessageSquare, Settings, Bell, CalendarDays, Coffee, UtensilsCrossed, Soup } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import FeedbackDialog from '@/components/feedback/FeedbackDialog';
 import MealQRCode from '@/components/qrcode/MealQRCode';
 import { useProfile } from '@/hooks/use-profile';
 import NotificationButton from '@/components/ui/NotificationButton';
 import { useNotifications } from '../../contexts/NotificationContext';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Database } from '@/types/supabase';
+import Loading from '@/components/Loading';
+
+type WeeklyMenu = Database['public']['Tables']['weekly_menu']['Row'];
+
+interface MenuData {
+  breakfast: string;
+  lunch: string;
+  snack: string;
+}
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -31,6 +42,21 @@ const Dashboard = () => {
   const [hasConfirmedMeal, setHasConfirmedMeal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isCurrentDay, setIsCurrentDay] = useState(true);
+  const [menuData, setMenuData] = useState<WeeklyMenu | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Definir limites de horário para cada refeição
+  const mealLimits = {
+    breakfast: { start: 5, end: 7.5 }, // 5:00 - 7:30
+    lunch: { start: 7.5, end: 9.67 }, // 7:30 - 9:40
+    snack: { start: 12.33, end: 14 }, // 12:20 - 14:00
+  };
+
+  // Calcular o horário atual
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTime = currentHour + (currentMinute / 60);
 
   useEffect(() => {
     setIsCurrentDay(isSameDay(selectedDate, new Date()));
@@ -41,6 +67,36 @@ const Dashboard = () => {
       fetchAttendance(profile.user_id, selectedDate);
     }
   }, [profile, selectedDate]);
+
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+        const { data, error } = await supabase
+          .from('weekly_menu')
+          .select('*')
+          .eq('date', formattedDate)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setMenuData(data);
+        } else {
+          setMenuData(null);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar cardápio:', error);
+        setMenuData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuData();
+  }, [selectedDate]);
 
   const fetchAttendance = async (userId: string, date: Date) => {
     try {
@@ -95,6 +151,17 @@ const Dashboard = () => {
 
   const handleAttendance = async (meal: 'breakfast' | 'lunch' | 'snack', attend: boolean) => {
     if (!profile?.user_id || !isCurrentDay) return;
+
+    // Verificar se está dentro do horário permitido
+    const mealLimit = mealLimits[meal];
+    if (currentTime > mealLimit.end) {
+      toast({
+        title: "Horário expirado",
+        description: "O horário para confirmar esta refeição já passou.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       setIsLoading(true);
@@ -107,6 +174,7 @@ const Dashboard = () => {
       
       setMealAttendance(newAttendance);
       
+      // Salvar na tabela meal_attendance
       const { data, error: fetchError } = await supabase
         .from('meal_attendance')
         .select('*')
@@ -150,16 +218,32 @@ const Dashboard = () => {
           }));
         }
       }
+
+      // Salvar na tabela meal_confirmations para contagem em tempo real
+      const { error: confirmationError } = await supabase
+        .from('meal_confirmations')
+        .upsert({
+          date: formattedDate,
+          meal_type: meal,
+          student_id: profile.user_id,
+          status: attend,
+          student_name: profile.name,
+          student_matricula: profile.matricula || '',
+          student_image: profile.profile_image || '',
+        }, {
+          onConflict: 'date,meal_type,student_id'
+        });
+
+      if (confirmationError) throw confirmationError;
       
       addNotification({
-        title: attend ? "Presença confirmada" : "Ausência registrada",
+        title: attend ? "Presença atualizada" : "Ausência atualizada",
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
-        date: new Date(),
         type: 'meal_attendance'
       });
       
       toast({
-        title: attend ? "Presença confirmada" : "Ausência registrada",
+        title: attend ? "Presença atualizada" : "Ausência atualizada",
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
       });
       
@@ -196,16 +280,19 @@ const Dashboard = () => {
     setShowFeedbackDialog(true);
   };
 
+  if (loading) {
+    return <Loading message="Carregando dashboard..." />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background page-transition">
       <StatusBar />
       
       <div className="flex justify-between items-center px-6 py-4 border-b border-border">
         <div className="flex items-center">
-          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3 overflow-hidden">
-            {profile?.profile_image ? (
-              <img src={profile.profile_image} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
+          <Avatar className="w-10 h-10 bg-[#244b2c] mr-3">
+            <AvatarImage src={profile?.profile_image || ''} alt={profile?.name || 'Perfil'} />
+            <AvatarFallback className="bg-[#244b2c] text-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -216,13 +303,12 @@ const Dashboard = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-primary-foreground"
               >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
+                <circle cx="12" cy="8" r="5" />
+                <path d="M20 21a8 8 0 0 0-16 0" />
               </svg>
-            )}
-          </div>
+            </AvatarFallback>
+          </Avatar>
           <h1 className="text-xl font-medium text-[#f45b43]">
             Olá, {profile?.name ? profile.name.split(' ')[0] : 'Aluno(a)'}!
           </h1>
@@ -241,7 +327,7 @@ const Dashboard = () => {
       <div className="p-6">
         <div className="flex items-center mb-3">
           <Calendar size={20} className="text-primary mr-2" />
-          <h2 className="text-lg font-medium text-foreground">
+          <h2 className="text-lg font-medium text-black">
             {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
           </h2>
         </div>
@@ -260,16 +346,19 @@ const Dashboard = () => {
           
           <div className="space-y-4">
             <div className="bg-white/10 rounded-lg p-3">
-              <h3 className="text-white font-medium mb-2">Café da Manhã</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-white font-medium mb-2">Café da Manhã</h3>
+                <span className="text-white text-xs">05:00 - 07:30</span>
+              </div>
               
               {isCurrentDay ? (
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => handleAttendance('breakfast', true)}
-                    disabled={isLoading}
+                    disabled={isLoading || currentTime > mealLimits.breakfast.end}
                     className={`py-2 rounded-md font-medium transition-all ${
                       mealAttendance.breakfast === true
-                        ? 'bg-red-500 text-white'
+                        ? 'bg-[#f45b43] text-white'
                         : 'bg-white/10 text-white hover:bg-white/20'
                     }`}
                   >
@@ -278,7 +367,7 @@ const Dashboard = () => {
                   
                   <button
                     onClick={() => handleAttendance('breakfast', false)}
-                    disabled={isLoading}
+                    disabled={isLoading || currentTime > mealLimits.breakfast.end}
                     className={`py-2 rounded-md font-medium transition-all ${
                       mealAttendance.breakfast === false
                         ? 'bg-[#f45b43] text-white'
@@ -293,9 +382,9 @@ const Dashboard = () => {
                   <div 
                     className={`w-3 h-3 rounded-full mr-2 ${
                       mealAttendance.breakfast === true 
-                        ? 'bg-green-500' 
+                        ? 'bg-[#f45b43]' 
                         : mealAttendance.breakfast === false 
-                        ? 'bg-red-500' 
+                        ? 'bg-[#f45b43]' 
                         : 'bg-gray-300'
                     }`}
                   />
@@ -318,28 +407,24 @@ const Dashboard = () => {
                     <QrCode size={16} />
                     <span>QR Code</span>
                   </button>
-                  <button 
-                    onClick={() => handleShowFeedback('breakfast')}
-                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                  >
-                    <MessageSquare size={16} />
-                    <span>Comentário</span>
-                  </button>
                 </div>
               )}
             </div>
             
             <div className="bg-white/10 rounded-lg p-3">
-              <h3 className="text-white font-medium mb-2">Almoço</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-white font-medium mb-2">Almoço</h3>
+                <span className="text-white text-xs">07:30 - 09:40</span>
+              </div>
               
               {isCurrentDay ? (
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => handleAttendance('lunch', true)}
-                    disabled={isLoading}
+                    disabled={isLoading || currentTime > mealLimits.lunch.end}
                     className={`py-2 rounded-md font-medium transition-all ${
                       mealAttendance.lunch === true
-                        ? 'bg-red-500 text-white'
+                        ? 'bg-[#f45b43] text-white'
                         : 'bg-white/10 text-white hover:bg-white/20'
                     }`}
                   >
@@ -348,7 +433,7 @@ const Dashboard = () => {
                   
                   <button
                     onClick={() => handleAttendance('lunch', false)}
-                    disabled={isLoading}
+                    disabled={isLoading || currentTime > mealLimits.lunch.end}
                     className={`py-2 rounded-md font-medium transition-all ${
                       mealAttendance.lunch === false
                         ? 'bg-[#f45b43] text-white'
@@ -363,9 +448,9 @@ const Dashboard = () => {
                   <div 
                     className={`w-3 h-3 rounded-full mr-2 ${
                       mealAttendance.lunch === true 
-                        ? 'bg-green-500' 
+                        ? 'bg-[#f45b43]' 
                         : mealAttendance.lunch === false 
-                        ? 'bg-red-500' 
+                        ? 'bg-[#f45b43]' 
                         : 'bg-gray-300'
                     }`}
                   />
@@ -388,28 +473,24 @@ const Dashboard = () => {
                     <QrCode size={16} />
                     <span>QR Code</span>
                   </button>
-                  <button 
-                    onClick={() => handleShowFeedback('lunch')}
-                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                  >
-                    <MessageSquare size={16} />
-                    <span>Comentário</span>
-                  </button>
                 </div>
               )}
             </div>
             
             <div className="bg-white/10 rounded-lg p-3">
-              <h3 className="text-white font-medium mb-2">Lanche da Tarde</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-white font-medium mb-2">Lanche da Tarde</h3>
+                <span className="text-white text-xs">12:20 - 14:00</span>
+              </div>
               
               {isCurrentDay ? (
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => handleAttendance('snack', true)}
-                    disabled={isLoading}
+                    disabled={isLoading || currentTime > mealLimits.snack.end}
                     className={`py-2 rounded-md font-medium transition-all ${
                       mealAttendance.snack === true
-                        ? 'bg-red-500 text-white'
+                        ? 'bg-[#f45b43] text-white'
                         : 'bg-white/10 text-white hover:bg-white/20'
                     }`}
                   >
@@ -418,7 +499,7 @@ const Dashboard = () => {
                   
                   <button
                     onClick={() => handleAttendance('snack', false)}
-                    disabled={isLoading}
+                    disabled={isLoading || currentTime > mealLimits.snack.end}
                     className={`py-2 rounded-md font-medium transition-all ${
                       mealAttendance.snack === false
                         ? 'bg-[#f45b43] text-white'
@@ -433,9 +514,9 @@ const Dashboard = () => {
                   <div 
                     className={`w-3 h-3 rounded-full mr-2 ${
                       mealAttendance.snack === true 
-                        ? 'bg-green-500' 
+                        ? 'bg-[#f45b43]' 
                         : mealAttendance.snack === false 
-                        ? 'bg-red-500' 
+                        ? 'bg-[#f45b43]' 
                         : 'bg-gray-300'
                     }`}
                   />
@@ -458,13 +539,6 @@ const Dashboard = () => {
                     <QrCode size={16} />
                     <span>QR Code</span>
                   </button>
-                  <button 
-                    onClick={() => handleShowFeedback('snack')}
-                    className="flex-1 flex items-center justify-center gap-1 bg-white/20 hover:bg-white/30 transition-colors text-white py-1.5 px-2 rounded"
-                  >
-                    <MessageSquare size={16} />
-                    <span>Comentário</span>
-                  </button>
                 </div>
               )}
             </div>
@@ -480,26 +554,36 @@ const Dashboard = () => {
           <div className="space-y-4">
             <MealCard
               title="Café da Manhã"
-              description="Pão, manteiga, café com leite"
+              description={menuData?.breakfast || "Cardápio não definido"}
               type="breakfast"
-              className="lg:p-4"
+              className="lg:p-4 text-white"
             />
             
             <MealCard
               title="Almoço"
-              description="Arroz, feijão, carne, salada"
+              description={menuData?.lunch || "Cardápio não definido"}
               type="lunch"
-              className="lg:p-4"
+              className="lg:p-4 text-white"
             />
             
             <MealCard
               title="Lanche da Tarde"
-              description="Suco de laranja, bolo de chocolate"
+              description={menuData?.snack || "Cardápio não definido"}
               type="dinner"
-              className="lg:p-4"
+              className="lg:p-4 text-white"
             />
           </div>
         </div>
+      </div>
+      
+      <div className="mx-6 mb-3">
+        <button 
+          onClick={() => setShowFeedbackDialog(true)}
+          className="bg-[#f45b43] hover:bg-[#f45b43]/90 text-white w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all"
+        >
+          <MessageSquare size={18} className="mr-2" />
+          <span>Deixar Comentários e Sugestões</span>
+        </button>
       </div>
       
       {profile?.user_id && activeMealType && mealAttendance.id && (
@@ -513,7 +597,7 @@ const Dashboard = () => {
         />
       )}
       
-      {activeMealType && (
+      {showFeedbackDialog && (
         <FeedbackDialog 
           open={showFeedbackDialog} 
           onOpenChange={setShowFeedbackDialog}

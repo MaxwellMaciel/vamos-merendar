@@ -141,7 +141,7 @@ const Notifications = () => {
               </button>
               <button 
                 onClick={deleteAllNotifications}
-                className="text-sm text-red-500 font-medium hover:text-red-600 transition-colors hidden md:block"
+                className="text-sm text-[#f45b43] font-medium hover:text-[#f45b43]/80 transition-colors hidden md:block"
               >
                 Excluir todas
               </button>
@@ -182,14 +182,14 @@ const Notifications = () => {
                     e.stopPropagation();
                     deleteNotification(notification.id);
                   }}
-                  className="ml-4 text-red-500 hover:text-red-600 transition-colors hidden md:block"
+                  className="ml-4 text-[#f45b43] hover:text-[#f45b43]/80 transition-colors hidden md:block"
                 >
                   <Trash2 size={20} />
                 </button>
                 {/* Indicadores de ação mobile */}
                 {draggedNotification?.id === notification.id && (
                   <>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-red-500 md:hidden">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#f45b43] md:hidden">
                       <Trash size={24} />
                     </div>
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary md:hidden">

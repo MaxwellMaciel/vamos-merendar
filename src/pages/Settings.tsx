@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/use-profile';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import Loading from '@/components/Loading';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -44,14 +45,7 @@ const Settings = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <StatusBar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
+    return <Loading message="Carregando configurações..." />;
   }
 
   return (
@@ -91,7 +85,7 @@ const Settings = () => {
                     </AvatarFallback>
                   )}
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 md:w-9 md:h-9 bg-emerald-500 rounded-full flex items-center justify-center ring-2 ring-white">
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 md:w-9 md:h-9 bg-[#244b2c] rounded-full flex items-center justify-center ring-2 ring-white">
                   <User size={14} className="text-white md:w-5 md:h-5" />
                 </div>
               </div>
@@ -149,14 +143,6 @@ const Settings = () => {
               to="/settings/theme"
               icon={<Palette size={18} className="text-primary md:w-6 md:h-6" />}
             />
-
-            {isNutricionista && (
-              <ProfileMenuItem
-                label="Diário de Presença"
-                to="/nutricionista/attendance"
-                icon={<Calendar size={18} className="text-primary md:w-6 md:h-6" />}
-              />
-            )}
           </div>
           
           <div className="bg-card text-card-foreground rounded-2xl shadow-lg mb-4 overflow-hidden">
@@ -179,7 +165,7 @@ const Settings = () => {
           
           <button
             onClick={handleLogout}
-            className="w-full mt-4 bg-card border border-red-500 text-red-500 font-medium py-3 md:py-4 rounded-lg hover:bg-red-50/10 transition-colors flex items-center justify-center text-sm md:text-base"
+            className="w-full mt-4 bg-card border border-[#f45b43] text-[#f45b43] font-medium py-3 md:py-4 rounded-lg hover:bg-[#f45b43]/10 transition-colors flex items-center justify-center text-sm md:text-base"
           >
             <LogOut size={18} className="mr-2 md:w-6 md:h-6" />
             <span>Sair da conta</span>

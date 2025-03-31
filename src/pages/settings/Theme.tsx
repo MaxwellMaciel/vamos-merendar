@@ -91,7 +91,7 @@ const Theme = () => {
               onClick={() => handleThemeSelect(THEME_NAMES.DEFAULT)}
             >
               <h3 className="text-lg font-semibold text-foreground mb-4">Default</h3>
-              <div className="aspect-video rounded-lg overflow-hidden bg-emerald-50 border border-border/50">
+              <div className="aspect-video rounded-lg overflow-hidden bg-[#244b2c]/10 border border-border/50">
                 <img 
                   src="/logo.png" 
                   alt="Default Theme Preview" 

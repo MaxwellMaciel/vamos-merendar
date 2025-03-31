@@ -47,19 +47,11 @@ const ProfessorLogin = () => {
         return;
       }
       
-      // Tentar autenticar usando o SIAPE diretamente
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: siape,
-        password,
-      });
-      
-      if (error) throw error;
-      
-      // Verificar se é professor
+      // Primeiro, buscar o perfil do professor pelo SIAPE
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('user_type, name')
-        .eq('user_id', data.user.id)
+        .select('user_id, user_type, name, email')
+        .eq('siape', siape)
         .single();
         
       if (profileError) throw profileError;
@@ -67,6 +59,14 @@ const ProfessorLogin = () => {
       if (profileData.user_type !== 'professor') {
         throw new Error('Este usuário não tem perfil de professor.');
       }
+      
+      // Agora fazer login com o email correto
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: profileData.email,
+        password,
+      });
+      
+      if (error) throw error;
       
       toast({
         title: "Login bem-sucedido",

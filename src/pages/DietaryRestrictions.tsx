@@ -13,8 +13,10 @@ interface LocationState {
   userData: {
     name: string;
     email: string;
-    matricula: string;
+    matricula: string | null;
+    siape: string | null;
     phone: string;
+    user_type: string;
   };
 }
 
@@ -27,8 +29,10 @@ const DietaryRestrictions = () => {
     userData: { 
       name: '', 
       email: '', 
-      matricula: '',
-      phone: ''
+      matricula: null,
+      siape: null,
+      phone: '',
+      user_type: 'aluno'
     } 
   };
   
@@ -57,8 +61,9 @@ const DietaryRestrictions = () => {
         email: userData.email,
         phone: userData.phone,
         matricula: userData.matricula,
+        siape: userData.siape,
         dietary_restrictions: restrictionsData,
-        user_type: 'aluno'
+        user_type: userData.user_type
       });
       
       if (error) throw error;

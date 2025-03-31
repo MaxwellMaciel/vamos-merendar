@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Loading from '@/components/Loading';
 
 interface ExtendedFeedback extends Feedback {
   profile?: {
@@ -99,6 +100,10 @@ const FeedbackReview = () => {
     
     return matchesType && matchesDate && matchesMeal;
   });
+
+  if (loading) {
+    return <Loading message="Carregando feedbacks..." />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white page-transition">
