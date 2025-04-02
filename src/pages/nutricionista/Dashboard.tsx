@@ -124,12 +124,12 @@ const Dashboard = () => {
       try {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
         
-        // Buscar confirmações diretamente da tabela meal_attendance
+        // Buscar confirmações diretamente da tabela meal_confirmations
         const { data: attendanceData, error } = await supabase
-          .from('meal_attendance')
-          .select('meal_type, status')
+          .from('meal_confirmations')
+          .select('meal_type')
           .eq('date', formattedDate)
-          .eq('status', 'confirmed');
+          .eq('status', true);
 
         if (error) throw error;
 
@@ -159,11 +159,12 @@ const Dashboard = () => {
 
     // Inscrever para atualizações em tempo real
     const subscription = supabase
-      .channel('meal_attendance_changes')
+      .channel('meal_confirmations_changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'meal_attendance',
+        table: 'meal_confirmations',
+        filter: `date=eq.${format(selectedDate, 'yyyy-MM-dd')}`
       }, () => {
         fetchConfirmationCounts();
       })

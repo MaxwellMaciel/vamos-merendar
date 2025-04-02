@@ -12,7 +12,7 @@ const About = () => {
     <div className="min-h-screen flex flex-col bg-background page-transition">
       <StatusBar />
       
-      <div className="p-4">
+      <div className="p-4 border-b border-gray-100">
         <BackButton to="/settings" label="Sobre o Aplicativo" />
       </div>
       

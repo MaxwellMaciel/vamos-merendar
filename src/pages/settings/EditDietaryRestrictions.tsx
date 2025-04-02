@@ -114,8 +114,8 @@ const EditDietaryRestrictions = () => {
     <div className="min-h-screen flex flex-col bg-background page-transition">
       <StatusBar />
       
-      <div className="p-4">
-        <BackButton to="/settings" label="Restrições Alimentares" />
+      <div className="p-4 border-b border-gray-100">
+        <BackButton to="/settings/dietary-restrictions" label="Editar Restrição" />
       </div>
       
       <div className="flex-1 p-6">

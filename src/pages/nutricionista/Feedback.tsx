@@ -4,12 +4,15 @@ import StatusBar from '../../components/StatusBar';
 import { Settings, MessageSquare, Lightbulb, ArrowLeft, Calendar, Coffee, UtensilsCrossed, Cookie, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { Feedback, Profile } from "@/types/supabase";
+import type { Database } from "@/types/supabase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Loading from '@/components/Loading';
+
+type Feedback = Database['public']['Tables']['feedback']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface ExtendedFeedback extends Feedback {
   profile?: {
@@ -115,7 +118,7 @@ const FeedbackReview = () => {
           <h1 className="text-xl font-medium text-[#244b2c]">Feedback dos Alunos</h1>
         </div>
         
-        <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
+        <Link to="/settings" className="text-[#244b2c] hover:text-[#244b2c]/90 transition-colors">
           <Settings size={24} />
         </Link>
       </div>
