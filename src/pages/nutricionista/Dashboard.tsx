@@ -14,6 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from "@/components/ui/use-toast";
 import MealConfirmations from '@/components/meals/MealConfirmations';
 import Loading from '@/components/Loading';
+import BottomSheet from '@/components/ui/BottomSheet';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type WeeklyMenu = Database['public']['Tables']['weekly_menu']['Row'];
@@ -324,25 +325,18 @@ const Dashboard = () => {
 
       {/* Modal de Confirmações */}
       {showConfirmationsList && selectedMealType && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-lg mx-4 overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-medium">Lista de Confirmações</h3>
-              <button 
-                onClick={() => setShowConfirmationsList(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <MealConfirmations
-                date={selectedDate}
-                mealType={selectedMealType}
-              />
-            </div>
+        <BottomSheet
+          open={showConfirmationsList}
+          onOpenChange={setShowConfirmationsList}
+          title={`Lista de Confirmações - ${selectedMealType === 'breakfast' ? 'Café da Manhã' : selectedMealType === 'lunch' ? 'Almoço' : 'Lanche da Tarde'}`}
+        >
+          <div className="p-4">
+            <MealConfirmations
+              date={selectedDate}
+              mealType={selectedMealType}
+            />
           </div>
-        </div>
+        </BottomSheet>
       )}
     </div>
   );
