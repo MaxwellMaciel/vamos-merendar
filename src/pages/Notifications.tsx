@@ -19,7 +19,8 @@ const Notifications = () => {
     deleteAllNotifications 
   } = useNotifications();
   const [userType, setUserType] = useState<'aluno' | 'professor' | 'nutricionista' | null>(null);
-  const [draggedNotification, setDraggedNotification] = useState<{ id: string, offset: number } | null>(null);
+  const [draggedNotification, setDraggedNotification] = useState<{ id: string, offset: number, startX: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const checkUserType = async () => {
@@ -94,31 +95,46 @@ const Notifications = () => {
 
   const handleTouchStart = (e: React.TouchEvent, id: string) => {
     const touch = e.touches[0];
-    setDraggedNotification({ id, offset: 0 });
+    setDraggedNotification({ id, offset: 0, startX: touch.clientX });
+    setIsDragging(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!draggedNotification) return;
+    if (!draggedNotification || !isDragging) return;
     
     const touch = e.touches[0];
     const element = e.currentTarget as HTMLElement;
     const rect = element.getBoundingClientRect();
-    const offset = touch.clientX - rect.left;
+    const deltaX = touch.clientX - draggedNotification.startX;
     
-    setDraggedNotification(prev => prev ? { ...prev, offset } : null);
+    // Limita o movimento entre -120px e 120px
+    const limitedOffset = Math.max(Math.min(deltaX, 120), -120);
+    
+    setDraggedNotification(prev => prev ? { ...prev, offset: limitedOffset } : null);
   };
 
   const handleTouchEnd = (e: React.TouchEvent, id: string) => {
-    if (!draggedNotification) return;
+    if (!draggedNotification || !isDragging) return;
 
     const offset = draggedNotification.offset;
-    if (offset > 100) { // Arrastou para direita - deletar
+    let finalOffset = 0;
+
+    // Snap para a ação mais próxima
+    if (offset > 60) {
+      finalOffset = 120; // Snap para deletar
       deleteNotification(id);
-    } else if (offset < -100) { // Arrastou para esquerda - marcar como lido
+    } else if (offset < -60) {
+      finalOffset = -120; // Snap para marcar como lido
       markAsRead(id);
     }
+
+    setDraggedNotification(prev => prev ? { ...prev, offset: finalOffset } : null);
+    setIsDragging(false);
     
-    setDraggedNotification(null);
+    // Reseta após a animação
+    setTimeout(() => {
+      setDraggedNotification(null);
+    }, 300);
   };
 
   return (
@@ -160,14 +176,15 @@ const Notifications = () => {
                   transform: draggedNotification?.id === notification.id 
                     ? `translateX(${draggedNotification.offset}px)` 
                     : undefined,
-                  transition: draggedNotification?.id === notification.id 
-                    ? 'none' 
-                    : 'transform 0.2s ease-out'
+                  transition: draggedNotification?.id === notification.id && !isDragging
+                    ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' 
+                    : 'none',
+                  touchAction: 'pan-y pinch-zoom'
                 }}
                 onTouchStart={(e) => handleTouchStart(e, notification.id)}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={(e) => handleTouchEnd(e, notification.id)}
-                onClick={() => markAsRead(notification.id)}
+                onClick={() => !isDragging && markAsRead(notification.id)}
               >
                 <div className="mr-3 mt-1 w-10 h-10 flex items-center justify-center rounded-full bg-primary/10">
                   {getIcon(notification.type)}
@@ -189,11 +206,21 @@ const Notifications = () => {
                 {/* Indicadores de ação mobile */}
                 {draggedNotification?.id === notification.id && (
                   <>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#f45b43] md:hidden">
-                      <Trash size={24} />
+                    <div 
+                      className={cn(
+                        "absolute right-0 top-0 h-full w-32 bg-[#f45b43] flex items-center justify-center transition-opacity",
+                        draggedNotification.offset > 0 ? "opacity-100" : "opacity-0"
+                      )}
+                    >
+                      <Trash size={24} className="text-white" />
                     </div>
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary md:hidden">
-                      <Eye size={24} />
+                    <div 
+                      className={cn(
+                        "absolute left-0 top-0 h-full w-32 bg-primary flex items-center justify-center transition-opacity",
+                        draggedNotification.offset < 0 ? "opacity-100" : "opacity-0"
+                      )}
+                    >
+                      <Eye size={24} className="text-white" />
                     </div>
                   </>
                 )}
