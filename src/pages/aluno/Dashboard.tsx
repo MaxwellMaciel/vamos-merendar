@@ -150,7 +150,14 @@ const Dashboard = () => {
   };
 
   const handleAttendance = async (meal: 'breakfast' | 'lunch' | 'snack', attend: boolean) => {
-    if (!profile?.user_id || !isCurrentDay) return;
+    if (!profile?.user_id || !isCurrentDay) {
+      console.log('Retornando: profile?.user_id ou !isCurrentDay é falso', { 
+        profile: profile?.user_id, 
+        isCurrentDay,
+        profileData: profile 
+      });
+      return;
+    }
 
     // Verificar se está dentro do horário permitido
     const mealLimit = mealLimits[meal];
@@ -167,6 +174,18 @@ const Dashboard = () => {
       setIsLoading(true);
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       
+      console.log('Iniciando atualização de presença:', {
+        meal,
+        attend,
+        formattedDate,
+        profile: {
+          user_id: profile.user_id,
+          name: profile.name,
+          matricula: profile.matricula,
+          profile_image: profile.profile_image
+        }
+      });
+      
       const newAttendance = {
         ...mealAttendance,
         [meal]: attend,
@@ -182,9 +201,13 @@ const Dashboard = () => {
         .eq('date', formattedDate)
         .maybeSingle();
       
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('Erro ao buscar attendance:', fetchError);
+        throw fetchError;
+      }
       
       if (data) {
+        console.log('Atualizando attendance existente:', data.id);
         const { error } = await supabase
           .from('meal_attendance')
           .update({
@@ -192,13 +215,17 @@ const Dashboard = () => {
           })
           .eq('id', data.id);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Erro ao atualizar attendance:', error);
+          throw error;
+        }
         
         setMealAttendance(prev => ({
           ...prev,
           id: data.id
         }));
       } else {
+        console.log('Criando novo attendance');
         const { data: newData, error } = await supabase
           .from('meal_attendance')
           .insert({
@@ -209,9 +236,13 @@ const Dashboard = () => {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Erro ao inserir novo attendance:', error);
+          throw error;
+        }
         
         if (newData) {
+          console.log('Novo attendance criado:', newData.id);
           setMealAttendance(prev => ({
             ...prev,
             id: newData.id
@@ -220,26 +251,79 @@ const Dashboard = () => {
       }
 
       // Salvar na tabela meal_confirmations para contagem em tempo real
-      const { error: confirmationError } = await supabase
-        .from('meal_confirmations')
-        .upsert({
-          date: formattedDate,
-          meal_type: meal,
-          student_id: profile.user_id,
-          status: attend,
-          student_name: profile.name,
-          student_matricula: profile.matricula || '',
-          student_image: profile.profile_image || '',
-        }, {
-          onConflict: 'date,meal_type,student_id'
-        });
-
-      if (confirmationError) throw confirmationError;
+      console.log('Tentando salvar na tabela meal_confirmations com os dados:', {
+        date: formattedDate,
+        meal_type: meal,
+        student_id: profile.user_id,
+        status: attend,
+        student_name: profile.name,
+        student_matricula: profile.matricula || '',
+        student_image: profile.profile_image || ''
+      });
       
+      // Tentar atualizar o registro existente primeiro
+      const { data: existingData, error: updateError } = await supabase
+        .from('meal_confirmations')
+        .select('*')
+        .eq('date', formattedDate)
+        .eq('meal_type', meal)
+        .eq('student_id', profile.user_id)
+        .maybeSingle();
+
+      console.log('Dados existentes:', existingData);
+
+      if (existingData) {
+        console.log('Atualizando confirmação existente:', existingData.id);
+        const { data: updateData, error: updateError } = await supabase
+          .from('meal_confirmations')
+          .update({
+            status: attend,
+            student_name: profile.name,
+            student_matricula: profile.matricula || '',
+            student_image: profile.profile_image || '',
+          })
+          .eq('id', existingData.id)
+          .select()
+          .single();
+
+        console.log('Resultado da atualização:', { updateData, updateError });
+
+        if (updateError) {
+          console.error('Erro ao atualizar confirmação:', updateError);
+          throw updateError;
+        }
+      } else {
+        console.log('Inserindo nova confirmação');
+        const { data: insertData, error: insertError } = await supabase
+          .from('meal_confirmations')
+          .insert({
+            date: formattedDate,
+            meal_type: meal,
+            student_id: profile.user_id,
+            status: attend,
+            student_name: profile.name,
+            student_matricula: profile.matricula || '',
+            student_image: profile.profile_image || '',
+          })
+          .select()
+          .single();
+
+        console.log('Resultado da inserção:', { insertData, insertError });
+
+        if (insertError) {
+          console.error('Erro ao inserir nova confirmação:', insertError);
+          throw insertError;
+        }
+      }
+      
+      console.log('Confirmação salva com sucesso');
+      
+      // Criar notificação apenas para o aluno que marcou a presença
       addNotification({
         title: attend ? "Presença atualizada" : "Ausência atualizada",
         description: `Sua ${attend ? 'presença foi confirmada' : 'ausência foi registrada'} para ${getMealName(meal)}.`,
-        type: 'meal_attendance'
+        type: 'meal_attendance',
+        target_audience: ['alunos']
       });
       
       toast({
@@ -249,7 +333,7 @@ const Dashboard = () => {
       
       fetchAttendance(profile.user_id, selectedDate);
     } catch (error) {
-      console.error('Error updating attendance:', error);
+      console.error('Erro completo ao atualizar presença:', error);
       toast({
         title: "Erro",
         description: "Não foi possível atualizar sua presença.",

@@ -34,6 +34,18 @@ create policy "Nutricionistas podem criar notificações"
     )
   );
 
+-- Política para alunos criarem notificações de presença em refeição
+create policy "Alunos podem criar notificações de presença em refeição"
+  on public.notifications for insert
+  with check (
+    exists (
+      select 1 from public.profiles
+      where user_id = auth.uid()
+      and user_type = 'aluno'
+    )
+    and type = 'meal_attendance'
+  );
+
 -- Política para usuários marcarem suas notificações como lidas
 create policy "Usuários podem marcar suas notificações como lidas"
   on public.notifications for update

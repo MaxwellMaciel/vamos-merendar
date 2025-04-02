@@ -1,9 +1,9 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import QRCode from 'react-qr-code';
 import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
 import { useMealQR } from '@/hooks/use-meal-qr';
 import Loading from '@/components/Loading';
+import BottomSheet from '@/components/ui/BottomSheet';
 
 interface MealQRCodeProps {
   open: boolean;
@@ -58,30 +58,25 @@ const MealQRCode: React.FC<MealQRCodeProps> = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md bg-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-primary flex items-center justify-center flex-col">
-            {getMealIcon()}
-            QR Code - {getMealTitle()}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex justify-center py-6">
-          <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-            <QRCode
-              value={qrValue}
-              size={200}
-              level="H"
-            />
-          </div>
+    <BottomSheet 
+      open={open} 
+      onOpenChange={onOpenChange}
+      title={`QR Code - ${getMealTitle()}`}
+    >
+      <div className="flex flex-col items-center p-6">
+        {getMealIcon()}
+        <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+          <QRCode
+            value={qrValue}
+            size={200}
+            level="H"
+          />
         </div>
-        
         <p className="text-center text-sm text-gray-500 mt-4">
           Apresente este QR code para confirmar sua presença na refeição
         </p>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </BottomSheet>
   );
 };
 
