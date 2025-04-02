@@ -4,11 +4,12 @@ import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import BackButton from '../../components/ui/BackButton';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarDays, Coffee, UtensilsCrossed, Soup, Save, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Coffee, UtensilsCrossed, Soup, Save, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/Loading';
+import { Link } from 'react-router-dom';
 
 const WeeklyMenu = () => {
   const { toast } = useToast();
@@ -154,8 +155,13 @@ const WeeklyMenu = () => {
     <div className="min-h-screen flex flex-col bg-white page-transition">
       <StatusBar />
       
-      <div className="p-4">
-        <BackButton to="/nutricionista/dashboard" label="Gerenciar Cardápio Semanal" />
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <BackButton to="/nutricionista/dashboard" label="Gerenciar Cardápio Semanal" />
+          <Link to="/settings" className="text-primary hover:text-primary-dark transition-colors">
+            <Settings size={24} />
+          </Link>
+        </div>
       </div>
       
       <div className="flex-1 p-6">

@@ -4,7 +4,6 @@ import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Users } from 'lucide-react';
-import Loading from '@/components/Loading';
 
 interface MealConfirmation {
   student_name: string;
@@ -27,7 +26,6 @@ interface MealConfirmationsProps {
 const MealConfirmations: React.FC<MealConfirmationsProps> = ({ date, mealType }) => {
   const [confirmations, setConfirmations] = useState<MealConfirmation[]>([]);
   const [counts, setCounts] = useState<MealCounts>({ confirmed_count: 0, declined_count: 0 });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchConfirmations = async () => {
@@ -67,8 +65,6 @@ const MealConfirmations: React.FC<MealConfirmationsProps> = ({ date, mealType })
         }
       } catch (error) {
         console.error('Erro ao buscar confirmações:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -92,10 +88,6 @@ const MealConfirmations: React.FC<MealConfirmationsProps> = ({ date, mealType })
       subscription.unsubscribe();
     };
   }, [date, mealType]);
-
-  if (loading) {
-    return <Loading message="Carregando confirmações..." />;
-  }
 
   const getMealName = () => {
     switch (mealType) {

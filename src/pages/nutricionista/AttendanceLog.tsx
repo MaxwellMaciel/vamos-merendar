@@ -61,6 +61,13 @@ const AttendanceLog = () => {
     setFilteredStudents(filtered);
   }, [searchTerm, students]);
 
+  useEffect(() => {
+    if (searchTerm && confirmedStudent) {
+      setConfirmedStudent(null);
+      setAttendanceData([]);
+    }
+  }, [searchTerm]);
+
   const fetchStudents = async () => {
     try {
       const { data, error } = await supabase
