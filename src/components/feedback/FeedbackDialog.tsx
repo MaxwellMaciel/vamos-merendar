@@ -165,7 +165,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             onClick={() => setFeedbackType('comment')}
             className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
               feedbackType === 'comment' 
-                ? 'bg-primary text-white' 
+                ? 'bg-[#f45b43] text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -176,7 +176,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             onClick={() => setFeedbackType('suggestion')}
             className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
               feedbackType === 'suggestion' 
-                ? 'bg-primary text-white' 
+                ? 'bg-[#f45b43] text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -188,7 +188,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
           <TabsList className="grid w-full grid-cols-3 gap-2 p-1 mb-2">
             <TabsTrigger 
               value="breakfast" 
-              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#f45b43] data-[state=active]:text-white"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#244b2c] data-[state=active]:text-white"
               disabled={!enabledMeals.breakfast}
             >
               <Coffee size={18} />
@@ -196,7 +196,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             </TabsTrigger>
             <TabsTrigger 
               value="lunch" 
-              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#f45b43] data-[state=active]:text-white"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#244b2c] data-[state=active]:text-white"
               disabled={!enabledMeals.lunch}
             >
               <UtensilsCrossed size={18} />
@@ -204,7 +204,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             </TabsTrigger>
             <TabsTrigger 
               value="snack" 
-              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#f45b43] data-[state=active]:text-white"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg data-[state=active]:bg-[#244b2c] data-[state=active]:text-white"
               disabled={!enabledMeals.snack}
             >
               <Cookie size={18} />
@@ -219,7 +219,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={`Digite seu ${feedbackType === 'comment' ? 'comentário' : 'sugestão'} sobre a refeição...`}
-                  className="w-full h-32 p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                  className="w-full h-32 p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#f45b43] focus:border-transparent resize-none"
                 />
               </div>
               
