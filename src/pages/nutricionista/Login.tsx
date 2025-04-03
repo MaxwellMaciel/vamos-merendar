@@ -95,7 +95,7 @@ const NutricionistaLogin = () => {
           </h1>
           
           {error && (
-            <div className="mb-4 p-3 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary text-sm animate-in fade-in">
+            <div className="mb-4 p-3 bg-[#f45b43]/10 border border-[#f45b43]/20 rounded-lg text-[#f45b43] text-sm animate-in fade-in">
               {error}
             </div>
           )}

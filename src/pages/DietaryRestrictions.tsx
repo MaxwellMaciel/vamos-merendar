@@ -39,6 +39,7 @@ const DietaryRestrictions = () => {
   const [hasRestriction, setHasRestriction] = useState<string>('no');
   const [restrictions, setRestrictions] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   if (!userId) {
     // Redirect to register if no userId is provided
@@ -81,6 +82,7 @@ const DietaryRestrictions = () => {
         description: error.message || "Ocorreu um erro ao salvar suas restrições alimentares.",
         variant: "destructive",
       });
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -135,6 +137,12 @@ const DietaryRestrictions = () => {
                   onChange={(e) => setRestrictions(e.target.value)}
                   className="resize-none h-32"
                 />
+              </div>
+            )}
+            
+            {error && (
+              <div className="mb-4 p-3 bg-[#f45b43]/10 border border-[#f45b43]/20 rounded-lg text-[#f45b43] text-sm animate-in fade-in">
+                {error}
               </div>
             )}
             
