@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBar from '../../components/StatusBar';
 import { supabase } from '@/integrations/supabase/client';
+import Loading from '@/components/Loading';
 
 const DietaryRestrictions = () => {
   const navigate = useNavigate();
@@ -20,21 +21,21 @@ const DietaryRestrictions = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('dietary_restrictions')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
         
         if (error) throw error;
         
         // Se já tem restrições cadastradas, redireciona para edição
-        if (data && data.dietary_restrictions && data.dietary_restrictions !== 'Nenhuma restrição alimentar') {
-          navigate('/settings/dietary-restrictions/edit');
+        if (data?.dietary_restrictions && data.dietary_restrictions !== 'Nenhuma restrição alimentar') {
+          navigate('/settings/dietary-restrictions/edit', { replace: true });
         } else {
           // Se não tem restrições, redireciona para cadastro
-          navigate('/settings/dietary-restrictions/add');
+          navigate('/settings/dietary-restrictions/add', { replace: true });
         }
       } catch (error) {
         console.error('Error checking dietary restrictions:', error);
-        navigate('/settings');
+        navigate('/settings', { replace: true });
       }
     };
     
@@ -45,7 +46,7 @@ const DietaryRestrictions = () => {
     <div className="min-h-screen flex flex-col bg-background page-transition">
       <StatusBar />
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-foreground">Carregando...</p>
+        <Loading message="Carregando..." />
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { Database } from '@/types/supabase';
 
 const NotificationType = {
   attendance: { icon: MapPin, label: 'Presença' },
@@ -67,17 +68,30 @@ const Notifications = () => {
       }
 
       // Criar notificações para cada usuário
-      const notificationsToInsert = targetUsers.map(targetUser => ({
+      const notificationsToInsert: Database['public']['Tables']['notifications']['Insert'][] = targetUsers.map(targetUser => ({
         user_id: targetUser.user_id,
         title: newNotification.title,
         description: newNotification.description,
-        type: newNotification.type,
+        type: newNotification.type as Database['public']['Tables']['notifications']['Row']['type'],
         target_audience: Object.entries(newNotification.targetAudience)
           .filter(([_, value]) => value)
           .map(([key]) => key),
         created_by: user.id,
-        read: false
+        read: targetUser.user_type === 'nutricionista'
       }));
+
+      // Adicionar notificação para a nutricionista (já marcada como lida)
+      notificationsToInsert.push({
+        user_id: user.id,
+        title: newNotification.title,
+        description: newNotification.description,
+        type: newNotification.type as Database['public']['Tables']['notifications']['Row']['type'],
+        target_audience: Object.entries(newNotification.targetAudience)
+          .filter(([_, value]) => value)
+          .map(([key]) => key),
+        created_by: user.id,
+        read: true // Sempre marcada como lida para a nutricionista
+      });
 
       console.log('Enviando notificações:', notificationsToInsert);
 

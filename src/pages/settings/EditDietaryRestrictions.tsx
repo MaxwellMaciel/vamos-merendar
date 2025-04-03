@@ -29,7 +29,7 @@ const EditDietaryRestrictions = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('dietary_restrictions')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
         
         if (error) throw error;
@@ -77,7 +77,7 @@ const EditDietaryRestrictions = () => {
       // Update profile with dietary restrictions
       const { error } = await supabase.from('profiles').update({
         dietary_restrictions: restrictions,
-      }).eq('id', user.id);
+      }).eq('user_id', user.id);
       
       if (error) throw error;
       
@@ -115,7 +115,7 @@ const EditDietaryRestrictions = () => {
       <StatusBar />
       
       <div className="p-4 border-b border-gray-100">
-        <BackButton to="/settings/dietary-restrictions" label="Editar Restrição" />
+        <BackButton to="/settings" label="Editar Restrição" />
       </div>
       
       <div className="flex-1 p-6">
