@@ -44,61 +44,31 @@ const AttendanceQuestion = () => {
   );
 };
 
-const ClassScheduleCard = ({ selectedDate }: { selectedDate: Date }) => {
-  // Demonstração de dias com aulas agendadas
-  const scheduledDays = [4, 5, 6, 7, 8, 9, 10];
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  
-  return (
-    <div className="bg-[#244b2c] rounded-lg p-4 mb-4">
-      <h3 className="text-white font-semibold mb-2 text-center">
-        Reposição / Anteposição
-      </h3>
-      <div className="flex overflow-x-auto py-2 space-x-2 justify-center">
-        {scheduledDays.map(day => {
-          const isSelected = day === selectedDay;
-          return (
-            <div
-              key={day}
-              onClick={() => setSelectedDay(isSelected ? null : day)}
-              className={`w-8 h-8 flex items-center justify-center rounded-full cursor-pointer transition-colors ${
-                isSelected
-                  ? 'bg-[#f45b43] text-white font-bold'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              {day}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { unreadCount } = useNotifications();
-  const [userName, setUserName] = useState('');
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<any>(null);
   
   useEffect(() => {
-    const fetchUserName = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
+    const fetchProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
           .from('profiles')
-          .select('name')
+          .select('*')
           .eq('user_id', user.id)
           .single();
-        
-        if (profile?.name) {
-          setUserName(profile.name.split(' ')[0]);
-        }
+
+        if (error) throw error;
+        setProfile(data);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
       }
     };
     
-    fetchUserName();
+    fetchProfile();
   }, []);
   
   const handleDateSelect = (date: Date) => {
@@ -147,8 +117,8 @@ const Dashboard = () => {
       
       <div className="p-6">
         <div className="flex items-center mb-4">
-          <Calendar size={20} className="text-[#fde2a1] mr-2" />
-          <h2 className="text-[#244b2c] font-semibold text-black">
+          <Calendar size={20} className="text-primary mr-2" />
+          <h2 className="text-primary font-semibold text-black">
             {format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
           </h2>
         </div>
@@ -160,22 +130,22 @@ const Dashboard = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6 mt-6">
           <AttendanceQuestion />
-          <ClassScheduleCard selectedDate={selectedDate} />
         </div>
         
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="bg-[#fde2a1]/20 rounded-lg p-4 flex flex-col items-center justify-center">
-            <Bell size={24} className="text-[#244b2c] mb-2" />
-            <p className="text-sm text-center text-[#244b2c]">
-              Amanhã você tem aula agendada!
-            </p>
-          </div>
-          <div className="bg-[#f45b43]/10 rounded-lg p-4 flex flex-col items-center justify-center">
-            <Calendar size={24} className="text-[#f45b43] mb-2" />
-            <p className="text-sm text-center text-[#f45b43] font-medium">
-              Aulas agendadas
-            </p>
-          </div>
+        <div className="mt-6 space-y-3">
+          <button 
+            className="bg-[#244b2c] hover:bg-[#244b2c]/90 text-white w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all"
+          >
+            <Calendar size={18} className="mr-2" />
+            <span>Reposição e Anteposição</span>
+          </button>
+
+          <button 
+            className="bg-[#f45b43] hover:bg-[#f45b43]/90 text-white w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all"
+          >
+            <Calendar size={18} className="mr-2" />
+            <span>Aulas Agendadas</span>
+          </button>
         </div>
       </div>
     </div>

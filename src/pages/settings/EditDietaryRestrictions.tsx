@@ -14,6 +14,7 @@ const EditDietaryRestrictions = () => {
   const [restrictions, setRestrictions] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchRestrictions = async () => {
@@ -148,6 +149,12 @@ const EditDietaryRestrictions = () => {
                 required
               />
             </div>
+            
+            {error && (
+              <div className="mb-4 p-3 bg-[#f45b43]/10 border border-[#f45b43]/20 rounded-lg text-[#f45b43] text-sm animate-in fade-in">
+                {error}
+              </div>
+            )}
             
             <div className="pt-4">
               <button

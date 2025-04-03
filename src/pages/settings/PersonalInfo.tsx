@@ -18,6 +18,7 @@ const PersonalInfo = () => {
   const [editingField, setEditingField] = useState<'name' | 'phone' | 'email' | null>(null);
   const [tempValue, setTempValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   console.log('PersonalInfo - Current profile state:', profile); // Debug log
 
@@ -237,6 +238,12 @@ const PersonalInfo = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {error && (
+        <div className="mb-4 p-3 bg-[#f45b43]/10 border border-[#f45b43]/20 rounded-lg text-[#f45b43] text-sm animate-in fade-in">
+          {error}
+        </div>
+      )}
     </div>
   );
 };

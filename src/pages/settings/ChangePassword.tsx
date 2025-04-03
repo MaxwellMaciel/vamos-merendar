@@ -122,7 +122,7 @@ const ChangePassword = () => {
         
         <div className="w-full max-w-md mx-auto">
           {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm animate-in fade-in">
+            <div className="mb-4 p-3 bg-[#f45b43]/10 border border-[#f45b43]/20 rounded-lg text-[#f45b43] text-sm animate-in fade-in">
               {error}
             </div>
           )}
