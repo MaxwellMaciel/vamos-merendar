@@ -90,7 +90,7 @@ export type Database = {
           snack?: string | null
         }
         Relationships: []
-      }
+      },
       feedback: {
         Row: {
           content: string
@@ -131,7 +131,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      },
       meal_attendance: {
         Row: {
           breakfast: boolean | null
@@ -161,7 +161,40 @@ export type Database = {
           student_id?: string
         }
         Relationships: []
-      }
+      },
+      meal_confirmations: {
+        Row: {
+          id: string
+          date: string
+          meal_type: 'breakfast' | 'lunch' | 'snack'
+          student_id: string
+          student_name: string
+          student_matricula: string
+          student_image?: string
+          status: boolean
+        }
+        Insert: {
+          id?: string
+          date?: string
+          meal_type?: 'breakfast' | 'lunch' | 'snack'
+          student_id?: string
+          student_name?: string
+          student_matricula?: string
+          student_image?: string
+          status?: boolean
+        }
+        Update: {
+          id?: string
+          date?: string
+          meal_type?: 'breakfast' | 'lunch' | 'snack'
+          student_id?: string
+          student_name?: string
+          student_matricula?: string
+          student_image?: string
+          status?: boolean
+        }
+        Relationships: []
+      },
       profiles: {
         Row: {
           id: string
@@ -201,16 +234,23 @@ export type Database = {
         }
         Relationships: []
       }
-    }
+    },
     Views: {
-      [_ in never]: never
-    }
+      meal_confirmation_counts: {
+        Row: {
+          date: string
+          meal_type: 'breakfast' | 'lunch' | 'snack'
+          confirmed_count: number
+          declined_count: number
+        }
+      }
+    },
     Functions: {
       [_ in never]: never
-    }
+    },
     Enums: {
       [_ in never]: never
-    }
+    },
     CompositeTypes: {
       [_ in never]: never
     }

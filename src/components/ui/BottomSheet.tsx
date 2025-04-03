@@ -22,12 +22,16 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   const currentYRef = useRef<number>(0);
 
   useEffect(() => {
+    console.log('BottomSheet - Estado open:', open);
+    console.log('BottomSheet - Props recebidas:', { title, className });
+
     if (open) {
       // Salva a posição atual do scroll
       const scrollY = window.scrollY;
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
+      console.log('BottomSheet - Fixando scroll');
     } else {
       // Restaura a posição do scroll
       const scrollY = document.body.style.top;
@@ -35,6 +39,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       document.body.style.top = '';
       document.body.style.width = '';
       window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
+      console.log('BottomSheet - Restaurando scroll');
     }
 
     return () => {
@@ -42,12 +47,14 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
+      console.log('BottomSheet - Limpando estilos');
     };
   }, [open]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startYRef.current = e.touches[0].clientY;
     currentYRef.current = e.touches[0].clientY;
+    console.log('BottomSheet - Touch iniciado:', { startY: startYRef.current });
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -58,6 +65,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     
     if (deltaY > 0) { // Só permite arrastar para baixo
       sheetRef.current.style.transform = `translateY(${deltaY}px)`;
+      console.log('BottomSheet - Movendo:', { deltaY });
     }
   };
 
@@ -65,23 +73,34 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     if (!sheetRef.current) return;
     
     const deltaY = currentYRef.current - startYRef.current;
+    console.log('BottomSheet - Touch finalizado:', { deltaY });
     
     if (deltaY > 100) { // Se arrastou mais de 100px, fecha
       onOpenChange(false);
+      console.log('BottomSheet - Fechando por arrasto');
     } else {
       // Volta para a posição inicial
       sheetRef.current.style.transform = '';
+      console.log('BottomSheet - Voltando para posição inicial');
     }
   };
 
-  if (!open) return null;
+  if (!open) {
+    console.log('BottomSheet - Não renderizando (open = false)');
+    return null;
+  }
+
+  console.log('BottomSheet - Renderizando conteúdo');
 
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/50 transition-opacity"
-        onClick={() => onOpenChange(false)}
+        onClick={() => {
+          console.log('BottomSheet - Fechando por clique no backdrop');
+          onOpenChange(false);
+        }}
       />
       
       {/* Sheet */}
@@ -104,7 +123,10 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <h2 className="text-lg font-medium text-gray-900">{title}</h2>
           <button
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              console.log('BottomSheet - Fechando por clique no botão');
+              onOpenChange(false);
+            }}
             className="text-gray-500 hover:text-gray-700"
           >
             <X size={20} />
@@ -112,7 +134,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         </div>
         
         {/* Content */}
-        <div className="max-h-[80vh] overflow-y-auto">
+        <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 4rem)' }}>
           {children}
         </div>
       </div>

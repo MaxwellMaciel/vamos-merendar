@@ -187,6 +187,10 @@ const Dashboard = () => {
     })));
   }, [todayMenu]);
 
+  useEffect(() => {
+    console.log('Dashboard - Estado do BottomSheet:', { showConfirmationsList, selectedMealType });
+  }, [showConfirmationsList, selectedMealType]);
+
   if (loading) {
     return <Loading message="Carregando dashboard..." />;
   }
@@ -328,14 +332,12 @@ const Dashboard = () => {
         <BottomSheet
           open={showConfirmationsList}
           onOpenChange={setShowConfirmationsList}
-          title={`Lista de Confirmações - ${selectedMealType === 'breakfast' ? 'Café da Manhã' : selectedMealType === 'lunch' ? 'Almoço' : 'Lanche da Tarde'}`}
+          title={`Confirmações para ${selectedMealType === 'breakfast' ? 'Café da Manhã' : selectedMealType === 'lunch' ? 'Almoço' : 'Lanche'}`}
         >
-          <div className="p-4">
-            <MealConfirmations
-              date={selectedDate}
-              mealType={selectedMealType}
-            />
-          </div>
+          <MealConfirmations
+            date={selectedDate.toISOString().split('T')[0]}
+            mealType={selectedMealType}
+          />
         </BottomSheet>
       )}
     </div>
