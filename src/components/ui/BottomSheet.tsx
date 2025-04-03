@@ -101,9 +101,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         </div>
         
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b relative">
-          <div className="w-8" /> {/* Espaçador para manter o título centralizado */}
-          <h2 className="absolute left-1/2 -translate-x-1/2 text-lg font-medium text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between px-4 py-3 border-b">
+          <h2 className="text-lg font-medium text-gray-900">{title}</h2>
           <button
             onClick={() => onOpenChange(false)}
             className="text-gray-500 hover:text-gray-700"

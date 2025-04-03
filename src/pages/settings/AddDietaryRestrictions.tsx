@@ -66,7 +66,7 @@ const AddDietaryRestrictions = () => {
       <StatusBar />
       
       <div className="p-4 border-b border-gray-100">
-        <BackButton to="/settings/dietary-restrictions" label="Adicionar Restrição" />
+        <BackButton to="/settings" label="Adicionar Restrição" />
       </div>
       
       <div className="flex-1 p-6">

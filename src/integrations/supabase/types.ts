@@ -9,6 +9,58 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string
+          type: 'attendance' | 'class' | 'menu' | 'register' | 'complete' | 'meal_attendance'
+          read: boolean
+          created_at: string
+          created_by: string | null
+          target_audience: string[]
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description: string
+          type: 'attendance' | 'class' | 'menu' | 'register' | 'complete' | 'meal_attendance'
+          read?: boolean
+          created_at?: string
+          created_by?: string | null
+          target_audience?: string[]
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string
+          type?: 'attendance' | 'class' | 'menu' | 'register' | 'complete' | 'meal_attendance'
+          read?: boolean
+          created_at?: string
+          created_by?: string | null
+          target_audience?: string[]
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
       daily_menu: {
         Row: {
           breakfast: string | null
