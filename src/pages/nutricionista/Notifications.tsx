@@ -39,6 +39,7 @@ const Notifications = () => {
       professores: false
     }
   });
+  const [viewType, setViewType] = useState('received');
 
   const handleSendNotification = async () => {
     try {
@@ -139,7 +140,7 @@ const Notifications = () => {
     <div className="min-h-screen flex flex-col bg-white page-transition">
       <StatusBar />
       
-      <div className="p-4">
+      <div className="p-4 border-b border-gray-200">
         <BackButton to="/nutricionista/dashboard" label="Notificações" />
       </div>
       
@@ -262,6 +263,31 @@ const Notifications = () => {
             </div>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="px-4 py-2">
+        <div className="flex gap-2">
+          <Button
+            variant={viewType === 'received' ? 'default' : 'outline'}
+            onClick={() => setViewType('received')}
+            className={cn(
+              "flex-1",
+              viewType === 'received' ? "bg-primary text-white hover:bg-primary/90" : "text-gray-700"
+            )}
+          >
+            Recebidas
+          </Button>
+          <Button
+            variant={viewType === 'sent' ? 'default' : 'outline'}
+            onClick={() => setViewType('sent')}
+            className={cn(
+              "flex-1",
+              viewType === 'sent' ? "bg-primary text-white hover:bg-primary/90" : "text-gray-700"
+            )}
+          >
+            Enviadas
+          </Button>
+        </div>
       </div>
       
       <div className="flex-1 divide-y">
