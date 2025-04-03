@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Coffee, UtensilsCrossed, Cookie } from 'lucide-react';
 import { format } from 'date-fns';
+import BottomSheet from '@/components/ui/BottomSheet';
 
 interface FeedbackDialogProps {
   open: boolean;
@@ -151,14 +151,13 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   const enabledMeals = getEnabledMeals();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-lg border border-gray-200 shadow-md bg-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-primary">
-            {feedbackType === 'comment' ? 'Deixe seu comentário' : 'Faça uma sugestão'}
-          </DialogTitle>
-        </DialogHeader>
-        
+    <BottomSheet 
+      open={open} 
+      onOpenChange={onOpenChange}
+      title={feedbackType === 'comment' ? 'Deixe seu comentário' : 'Faça uma sugestão'}
+      className="[&>div>h2]:text-center"
+    >
+      <div className="p-4">
         <div className="flex gap-4 mb-3">
           <button 
             type="button"
@@ -233,8 +232,8 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             </div>
           </form>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </BottomSheet>
   );
 };
 
