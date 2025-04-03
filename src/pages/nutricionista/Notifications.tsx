@@ -167,38 +167,37 @@ const Notifications = () => {
               Nova Notificação
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md bg-white">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold text-gray-900">Enviar Nova Notificação</DialogTitle>
+          <DialogContent className="w-[95vw] sm:max-w-md bg-white max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg">
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900">Enviar Nova Notificação</DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-4 py-4">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-gray-700">Título</Label>
+                <Label htmlFor="title" className="text-sm sm:text-base text-gray-700">Título</Label>
                 <Input
                   id="title"
                   value={newNotification.title}
                   onChange={(e) => setNewNotification(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Digite o título da notificação"
-                  className="bg-white border-gray-200"
+                  className="bg-white border-gray-200 text-sm sm:text-base"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-gray-700">Mensagem</Label>
+                <Label htmlFor="description" className="text-sm sm:text-base text-gray-700">Mensagem</Label>
                 <Textarea
                   id="description"
                   value={newNotification.description}
                   onChange={(e) => setNewNotification(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Digite a mensagem da notificação"
-                  rows={4}
-                  className="bg-white border-gray-200"
+                  className="bg-white border-gray-200 min-h-[100px] resize-none text-sm sm:text-base"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label className="text-gray-700">Ícone</Label>
-                <div className="grid grid-cols-3 gap-2">
+                <Label className="text-sm sm:text-base text-gray-700">Ícone</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Object.entries(NotificationType).map(([key, { icon: Icon, label }]) => (
                     <button
                       key={key}
@@ -210,7 +209,7 @@ const Notifications = () => {
                           : "border-gray-200 hover:border-primary/50"
                       )}
                     >
-                      <Icon size={20} className={cn(
+                      <Icon size={18} className={cn(
                         "transition-colors",
                         newNotification.type === key ? "text-primary" : "text-gray-500"
                       )} />
@@ -221,7 +220,7 @@ const Notifications = () => {
               </div>
               
               <div className="space-y-2">
-                <Label className="text-gray-700">Público-alvo</Label>
+                <Label className="text-sm sm:text-base text-gray-700">Público-alvo</Label>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -237,7 +236,7 @@ const Notifications = () => {
                         }))
                       }
                     />
-                    <Label htmlFor="alunos" className="text-gray-700">Alunos</Label>
+                    <Label htmlFor="alunos" className="text-sm sm:text-base text-gray-700">Alunos</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -253,24 +252,24 @@ const Notifications = () => {
                         }))
                       }
                     />
-                    <Label htmlFor="professores" className="text-gray-700">Professores</Label>
+                    <Label htmlFor="professores" className="text-sm sm:text-base text-gray-700">Professores</Label>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 mt-6">
               <Button
                 variant="outline"
                 onClick={() => setShowNewNotificationDialog(false)}
-                className="border-gray-200 hover:bg-gray-50"
+                className="border-gray-200 hover:bg-gray-50 text-sm sm:text-base"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleSendNotification}
                 disabled={!newNotification.title || !newNotification.description}
-                className="bg-primary text-white hover:bg-primary/90"
+                className="bg-primary text-white hover:bg-primary/90 text-sm sm:text-base"
               >
                 Enviar
               </Button>
