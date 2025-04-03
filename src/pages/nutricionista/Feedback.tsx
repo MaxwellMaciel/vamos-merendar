@@ -45,9 +45,7 @@ const FeedbackReview = () => {
         if (error) throw error;
         
         // Get unique dates from feedback
-        const uniqueDates = [...new Set(data?.map(item => 
-          item.date || format(new Date(item.created_at), 'yyyy-MM-dd')
-        ))];
+        const uniqueDates = [...new Set(data?.map(item => item.date))];
         setAvailableDates(uniqueDates);
         
         // Type casting to ensure compatibility with our Feedback type
@@ -95,8 +93,7 @@ const FeedbackReview = () => {
       : item.feedback_type === 'suggestion';
     
     // Filter by date
-    const itemDate = item.date || format(new Date(item.created_at), 'yyyy-MM-dd');
-    const matchesDate = selectedDate === 'all' || itemDate === selectedDate;
+    const matchesDate = selectedDate === 'all' || item.date === selectedDate;
     
     // Filter by meal type
     const matchesMeal = selectedMeal === 'all' || item.meal_type === selectedMeal;
@@ -239,7 +236,7 @@ const FeedbackReview = () => {
                           {getMealLabel(item.meal_type)}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {getFormattedDate(item.date || item.created_at)}
+                          {getFormattedDate(item.date)}
                         </div>
                       </div>
                     </div>
@@ -292,7 +289,7 @@ const FeedbackReview = () => {
                           {getMealLabel(item.meal_type)}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {getFormattedDate(item.date || item.created_at)}
+                          {getFormattedDate(item.date)}
                         </div>
                       </div>
                     </div>

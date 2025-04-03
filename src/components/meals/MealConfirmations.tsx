@@ -3,60 +3,51 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User } from 'lucide-react';
-import BottomSheet from '@/components/ui/BottomSheet';
+import { User, Loader2, CheckCircle2 } from 'lucide-react';
+import type { Database } from '@/types/supabase';
 
-interface MealConfirmation {
-  id: string;
-  student_name: string;
-  student_matricula: string;
-  student_image?: string;
-  created_at: string;
-}
+type MealConfirmation = Database['public']['Tables']['meal_confirmations']['Row'];
 
 interface MealConfirmationsProps {
-  date: Date;
+  date: string;
   mealType: 'breakfast' | 'lunch' | 'snack';
 }
 
-const MealConfirmations: React.FC<MealConfirmationsProps> = ({ date, mealType }) => {
+export function MealConfirmations({ date, mealType }: MealConfirmationsProps) {
   const [confirmations, setConfirmations] = useState<MealConfirmation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    async function fetchConfirmations() {
+      console.log('Iniciando busca de confirmações:', { date, mealType });
+      
+      try {
+        const { data, error } = await supabase
+          .from('meal_confirmations')
+          .select('*')
+          .eq('date', date)
+          .eq('meal_type', mealType)
+          .eq('status', true);
+
+        if (error) {
+          console.error('Erro ao buscar confirmações:', error);
+          setConfirmations([]);
+          return;
+        }
+
+        console.log('Dados recebidos:', data);
+        setConfirmations(data || []);
+      } catch (error) {
+        console.error('Erro ao buscar confirmações:', error);
+        setConfirmations([]);
+      } finally {
+        setLoading(false);
+        console.log('Estado final:', { loading: false, confirmationsCount: confirmations.length });
+      }
+    }
+
     fetchConfirmations();
   }, [date, mealType]);
-
-  const fetchConfirmations = async () => {
-    try {
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      
-      const { data, error } = await supabase
-        .from('meal_confirmations')
-        .select('id, student_name, student_matricula, student_image, created_at')
-        .eq('date', formattedDate)
-        .eq('meal_type', mealType)
-        .eq('status', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Filtra apenas os campos necessários
-      const filteredData = (data || []).map(item => ({
-        id: item.id,
-        student_name: item.student_name,
-        student_matricula: item.student_matricula,
-        student_image: item.student_image,
-        created_at: item.created_at
-      }));
-      
-      setConfirmations(filteredData);
-    } catch (error) {
-      console.error('Error fetching confirmations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getMealTitle = () => {
     switch (mealType) {
@@ -68,44 +59,56 @@ const MealConfirmations: React.FC<MealConfirmationsProps> = ({ date, mealType })
   };
 
   if (loading) {
+    console.log('Renderizando estado de carregamento');
     return (
-      <div className="flex justify-center py-10">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  console.log('Renderizando lista de confirmações:', { count: confirmations.length });
+
+  if (confirmations.length === 0) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        Nenhuma confirmação encontrada para esta refeição.
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {confirmations.length === 0 ? (
-        <div className="text-center py-10 text-gray-500">
-          <User className="mx-auto h-10 w-10 text-gray-300 mb-2" />
-          <p>Nenhuma confirmação encontrada</p>
-        </div>
-      ) : (
-        confirmations.map((confirmation) => (
-          <div key={confirmation.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
-            <Avatar className="w-10 h-10">
-              {confirmation.student_image ? (
-                <AvatarImage src={confirmation.student_image} alt={confirmation.student_name} />
-              ) : (
-                <AvatarFallback>
-                  <User size={20} />
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">{confirmation.student_name}</p>
-              <p className="text-sm text-gray-500">Matrícula: {confirmation.student_matricula}</p>
+    <div className="space-y-4 p-4">
+      {confirmations.map((confirmation) => (
+        <div
+          key={confirmation.id}
+          className="flex items-start gap-4 rounded-lg border p-4"
+        >
+          <Avatar className="h-10 w-10">
+            {confirmation.student_image ? (
+              <AvatarImage src={confirmation.student_image} alt={confirmation.student_name} />
+            ) : (
+              <AvatarFallback>
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center justify-between">
+              <p className="font-medium">{confirmation.student_name}</p>
+              <span className="text-sm text-muted-foreground">
+                Matrícula: {confirmation.student_matricula}
+              </span>
             </div>
-            <div className="text-sm text-gray-500">
-              {format(new Date(confirmation.created_at), 'HH:mm', { locale: ptBR })}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <span>Confirmou presença</span>
             </div>
           </div>
-        ))
-      )}
+        </div>
+      ))}
     </div>
   );
-};
+}
 
 export default MealConfirmations; 
