@@ -1,17 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vamos Merendar</title>
-    <meta name="description" content="Lovable Generated Project" />
+    <meta name="description" content="Aplicativo para organizar merendas" />
     <meta name="author" content="Lovable" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
   </head>
 
   <body>
     <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      console.log('Verificando suporte a Service Worker...');
+      if ('serviceWorker' in navigator) {
+        console.log('Service Worker é suportado!');
+        window.addEventListener('load', () => {
+          console.log('Página carregada, tentando registrar Service Worker...');
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registrado com sucesso!');
+              console.log('Scope:', registration.scope);
+              console.log('Script:', registration.scriptURL);
+            })
+            .catch(error => {
+              console.error('Erro ao registrar Service Worker:', error);
+            });
+        });
+      } else {
+        console.log('Service Worker não é suportado neste navegador');
+      }
+    </script>
   </body>
 </html>
