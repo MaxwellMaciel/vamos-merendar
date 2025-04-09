@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vamos Merendar - Confirmação de E-mail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background-color: #e8f0e3;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header img {
+            height: 40px;
+        }
+
+        .header h1 {
+            color: #2c5738;
+            margin: 0;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+            font-size: 24px;
+        }
+
+        .content {
+            padding: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .confirm-button {
+            display: inline-block;
+            background-color: #ffd666;
+            color: #333;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .confirm-button:hover {
+            background-color: #ffc933;
+        }
+
+        .footer {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .social-links {
+            margin-bottom: 20px;
+        }
+
+        .social-links a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            font-size: 20px;
+        }
+
+        .unsubscribe {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .unsubscribe a {
+            color: #ff6b6b;
+            text-decoration: none;
+        }
+
+        .copyright {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .footer-links {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        .logo-footer {
+            margin-top: 20px;
+            width: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEK0lEQVR4nO2ZW2xUVRSGv71npp1OZ6ZDL9NLKW2h0BZKC7RAi0ACSAKJEAMhQUl8wQteEo0xvvmgD14SNeGBxAufJCbGECXBmCgGjYlBQClQaAu9wXTodHq/zMw5e/swU2h7pnPpdA4JdL+cZM5Za+/1n7XX2WvvA7nkkksuf2UEgNbS2+LKtJG7FdFYQGhFQRBFQQA7Ao7/8XPaEwXwz1hEfG4RUZAQBQHBdvvZiQKSJGG1Wm/bTxQErDYb8XicRDyBzWbFYrEQi8VIJBLY7XYkScJqtRKPx0kmk4iiiM1mI5lIYLfbkWWZeDyOKIo4nU5isRjxeByXy4UkSUSjUex2O06nE1mWicViOJ1OkskkPp+PZDKJy+VClmVCoRAulwu73U4kEsHtdiPLMuFwGLfbTSKRIBwO43a7sdlsRCIR3G43FouFcDiMx+NBFEUikQgejwdBEIhGo3g8HqxWK9FoFK/XiyAIRKNRvF4vVquVWCyG1+tFkiSi0Sg+nw+r1UosFsPn8yFJEvF4HJ/Ph81mIx6P4/f7sdvtJBIJ/H4/DocDWZYJBAI4nU4SiQSBQACn00kymSQYDOJyuZBlmVAohNvtRpZlwuEwHo+HZDJJOBzG4/GQSCQIh8N4vV4sFguRSASv14soikSjUbxeL6IoEovF8Pl8WCwW4vE4Pp8PSZKIx+P4/X5sNhuJRAK/34/dbieZTBIIBHA4HMiyTDAYxOl0kkgkCAaDuFwuZFkmFArhdrtJJBKEw2E8Hg+yLBOJRPB6vVitViKRCF6vF0EQiEajeDweRFEkFovh8/mwWCzE43H8fj82m41EIkEgEMBut5NMJgkEAjgcDhKJBMFgEKfTSTKZJBQK4XK5kGWZcDiM2+0mmUwSiUTweDzIskw0GsXr9WKxWIhGo3i9XkRRJBaL4fP5EEWReDyO3+/HarWSSCQIBALY7XaSySShUAiHw0EymSQUCuF0OpFlmXA4jMvlQpZlIpEIHo+HZDJJNBrF4/FgsViIRqN4PB5EUSQWi+Hz+bBYLMTjcfx+PzabjUQiQSAQwG63k0wmCQaDOBwOEokEoVAIp9NJMpkkHA7jcrlIJpNEIhE8Hg+yLBONRvF6vVitVqLRKF6vF0EQiMVi+Hw+RFEkHo/j9/uxWq0kEgkCgQB2u51kMkkwGMThcJBIJAgGgzidTmRZJhQK4XK5kGWZSCSCx+MhmUwSjUbxeDxYLBai0SgejwdRFInFYvh8PkRRJB6P4/f7sVgsJBIJAoEANpuNZDJJMBjE4XCQSCQIBoM4nU5kWSYUCuFyuZBlmUgkgtvtRpZlotEoHo8Hi8VCNBrF4/EgiiKxWAyv14soijQ1NbFt2zZ27NjB7t272bNnD/v27WP//v0cOHCAQ4cOcfjwYY4ePcqxY8c4fvw4J06c4OTJk5w6dYrTp09z5swZzp49y7lz5zh//jwXLlzg4sWLXLp0icuXL3PlyhWuXr3KtWvXuH79Ojdu3ODmzZvcunWL27dvc+fOHTo7O+nq6qK7u5uenh56e3vp6+ujv7+fgYEBBgcHGRoaYnh4mJGREUZHRxkbG2N8fJyJiQkmJyeZmppiZmaG2dlZ5ubmmJ+fZ2FhgcXFRZaWllheXmZlZYXV1VXW1tZYX19nY2ODzc1Ntra22N7eZmdnh93dXfb29tjf3+fOnTscHBxweHjI0dERx8fHnJyccHp6ytnZGefn51xcXHB5ecnV1RXX19fcAP8H44XUZ0KtZPsAAAAASUVORK5CYII=" alt="Logo Vamos Merendar">
+            <h1>VAMOS MERENDAR</h1>
+        </div>
+        
+        <div class="content">
+            <h2>Confirme seu e-mail de cadastro</h2>
+            <p>Obrigado por se juntar ao Vamos Merendar! Para finalizar a inscrição, basta confirmar que acertamos seu e-mail.</p>
+            <a href="{{ .ConfirmationURL }}" class="confirm-button">Confirmar e-mail</a>
+        </div>
+
+        <div class="footer">
+            <div class="social-links">
+                <a href="#" title="WhatsApp">📱</a>
+                <a href="#" title="Instagram">📸</a>
+                <a href="#" title="Telegram">✈️</a>
+                <a href="#" title="YouTube">▶️</a>
+                <a href="mailto:{{ .Email }}" title="Email">✉️</a>
+            </div>
+
+            <div class="unsubscribe">
+                Caso queira deixar de receber os nossos e-mails, por favor, 
+                <a href="{{ .SiteURL }}/cancelar-inscricao?token={{ .Token }}&email={{ .Email }}">clicando aqui</a>.
+            </div>
+
+            <div class="copyright">
+                © Copyright 2024 Vamos Merendar. Todos os direitos reservados.
+            </div>
+
+            <div class="footer-links">
+                <a href="{{ .SiteURL }}/privacidade">Privacidade</a> | 
+                <a href="{{ .SiteURL }}/termos-de-uso">Termos de uso</a>
+            </div>
+
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEK0lEQVR4nO2ZW2xUVRSGv71npp1OZ6ZDL9NLKW2h0BZKC7RAi0ACSAKJEAMhQUl8wQteEo0xvvmgD14SNeGBxAufJCbGECXBmCgGjYlBQClQaAu9wXTodHq/zMw5e/swU2h7pnPpdA4JdL+cZM5Za+/1n7XX2WvvA7nkkksuf2UEgNbS2+LKtJG7FdFYQGhFQRBFQQA7Ao7/8XPaEwXwz1hEfG4RUZAQBQHBdvvZiQKSJGG1Wm/bTxQErDYb8XicRDyBzWbFYrEQi8VIJBLY7XYkScJqtRKPx0kmk4iiiM1mI5lIYLfbkWWZeDyOKIo4nU5isRjxeByXy4UkSUSjUex2O06nE1mWicViOJ1OkskkPp+PZDKJy+VClmVCoRAulwu73U4kEsHtdiPLMuFwGLfbTSKRIBwO43a7sdlsRCIR3G43FouFcDiMx+NBFEUikQgejwdBEIhGo3g8HqxWK9FoFK/XiyAIRKNRvF4vVquVWCyG1+tFkiSi0Sg+nw+r1UosFsPn8yFJEvF4HJ/Ph81mIx6P4/f7sdvtJBIJ/H4/DocDWZYJBAI4nU4SiQSBQACn00kymSQYDOJyuZBlmVAohNvtRpZlwuEwHo+HZDJJOBzG4/GQSCQIh8N4vV4sFguRSASv14soikSjUbxeL6IoEovF8Pl8WCwW4vE4Pp8PSZKIx+P4/X5sNhuJRAK/34/dbieZTBIIBHA4HMiyTDAYxOl0kkgkCAaDuFwuZFkmFArhdrtJJBKEw2E8Hg+yLBOJRPB6vVitViKRCF6vF0EQiEajeDweRFEkFovh8/mwWCzE43H8fj82m41EIkEgEMBut5NMJgkEAjgcDhKJBMFgEKfTSTKZJBQK4XK5kGWZcDiM2+0mmUwSiUTweDzIskw0GsXr9WKxWIhGo3i9XkRRJBaL4fP5EEWReDyO3+/HarWSSCQIBALY7XaSySShUAiHw0EymSQUCuF0OpFlmXA4jMvlQpZlIpEIHo+HZDJJNBrF4/FgsViIRqN4PB5EUSQWi+Hz+bBYLMTjcfx+PzabjUQiQSAQwG63k0wmCQaDOBwOEokEoVAIp9NJMpkkHA7jcrlIJpNEIhE8Hg+yLBONRvF6vVitVqLRKF6vF0EQiMVi+Hw+RFEkHo/j9/uxWq0kEgkCgQB2u51kMkkwGMThcJBIJAgGgzidTmRZJhQK4XK5kGWZSCSCx+MhmUwSjUbxeDxYLBai0SgejwdRFInFYvh8PkRRJB6P4/f7sVgsJBIJAoEANpuNZDJJMBjE4XCQSCQIBoM4nU5kWSYUCuFyuZBlmUgkgtvtRpZlotEoHo8Hi8VCNBrF4/EgiiKxWAyv14soijQ1NbFt2zZ27NjB7t272bNnD/v27WP//v0cOHCAQ4cOcfjwYY4ePcqxY8c4fvw4J06c4OTJk5w6dYrTp09z5swZzp49y7lz5zh//jwXLlzg4sWLXLp0icuXL3PlyhWuXr3KtWvXuH79Ojdu3ODmzZvcunWL27dvc+fOHTo7O+nq6qK7u5uenh56e3vp6+ujv7+fgYEBBgcHGRoaYnh4mJGREUZHRxkbG2N8fJyJiQkmJyeZmppiZmaG2dlZ5ubmmJ+fZ2FhgcXFRZaWllheXmZlZYXV1VXW1tZYX19nY2ODzc1Ntra22N7eZmdnh93dXfb29tjf3+fOnTscHBxweHjI0dERx8fHnJyccHp6ytnZGefn51xcXHB5ecnV1RXX19fcAP8H44XUZ0KtZPsAAAAASUVORK5CYII=" alt="Logo Footer" class="logo-footer">
+        </div>
+    </div>
+</body>
+</html> 
