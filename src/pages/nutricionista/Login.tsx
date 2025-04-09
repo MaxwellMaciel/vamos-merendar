@@ -7,7 +7,6 @@ import StatusBar from '../../components/StatusBar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Loading from '../../components/Loading';
-import { Checkbox } from '@/components/ui/checkbox';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,65 +17,11 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    // Verificar se existem credenciais salvas
-    const checkSavedCredentials = async () => {
-      try {
-        const { data: savedCred } = await supabase
-          .from('saved_credentials')
-          .select('siape, remember_token')
-          .single();
-
-        if (savedCred?.siape && savedCred?.remember_token) {
-          setSiape(savedCred.siape);
-          setRememberMe(true);
-          // Tentar login automático
-          handleAutoLogin(savedCred.siape, savedCred.remember_token);
-        }
-      } catch (error) {
-        console.error('Erro ao verificar credenciais salvas:', error);
-      } finally {
-        setIsPageLoading(false);
-      }
-    };
-
-    checkSavedCredentials();
+    // Apenas marcar que a página terminou de carregar
+    setIsPageLoading(false);
   }, []);
-
-  const handleAutoLogin = async (savedSiape: string, rememberToken: string) => {
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('siape', savedSiape)
-        .single();
-
-      if (!profile) throw new Error('Perfil não encontrado');
-
-      const { data: authData, error: loginError } = await supabase.auth.signInWithPassword({
-        email: profile.email.toLowerCase(),
-        password: rememberToken
-      });
-
-      if (loginError) throw loginError;
-
-      toast({
-        title: "Login automático realizado",
-        description: `Bem-vindo de volta, ${profile.name}!`,
-      });
-
-      navigate('/nutricionista/dashboard');
-    } catch (error) {
-      console.error('Erro no login automático:', error);
-      // Limpar credenciais salvas em caso de erro
-      await supabase
-        .from('saved_credentials')
-        .delete()
-        .match({ siape: savedSiape });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,15 +55,6 @@ const Login = () => {
       });
 
       if (loginError) throw loginError;
-
-      // Se "Lembrar de mim" estiver marcado, salvar as credenciais
-      if (rememberMe) {
-        await supabase.from('saved_credentials').upsert({
-          user_id: authData.user?.id,
-          siape: siape,
-          remember_token: password
-        }, { onConflict: 'user_id' });
-      }
 
       toast({
         title: "Login bem-sucedido",
@@ -195,21 +131,7 @@ const Login = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                />
-                <label
-                  htmlFor="rememberMe"
-                  className="text-sm text-gray-600 cursor-pointer"
-                >
-                  Lembrar de mim
-                </label>
-              </div>
-
+            <div className="flex justify-center">
               <Link
                 to="/forgot-password"
                 className="text-sm text-primary hover:underline"
