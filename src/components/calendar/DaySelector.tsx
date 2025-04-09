@@ -36,7 +36,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({ selectedDate, onSelectDate })
           <button
             key={day.date.toString()}
             onClick={() => onSelectDate(day.date)}
-            className={`rounded-full w-9 h-9 mx-auto flex items-center justify-center transition-all ${
+            className={`rounded-lg w-9 h-9 mx-auto flex items-center justify-center transition-all ${
               day.isSelected
                 ? 'bg-[#f45b43] text-white font-medium shadow-sm'
                 : 'hover:bg-gray-100'
