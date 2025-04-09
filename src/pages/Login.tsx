@@ -7,7 +7,6 @@ import StatusBar from '../components/StatusBar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Loading from '../components/Loading';
-import { Checkbox } from '@/components/ui/checkbox';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,73 +17,11 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
 
   React.useEffect(() => {
-    // Verificar se existem credenciais salvas
-    const checkSavedCredentials = async () => {
-      try {
-        const { data: savedCred } = await supabase
-          .from('saved_credentials')
-          .select('matricula, remember_token')
-          .single();
-
-        if (savedCred?.matricula && savedCred?.remember_token) {
-          setMatricula(savedCred.matricula);
-          setRememberMe(true);
-          // Tentar login automático
-          handleAutoLogin(savedCred.matricula, savedCred.remember_token);
-        }
-      } catch (error) {
-        console.error('Erro ao verificar credenciais salvas:', error);
-      } finally {
-        setIsPageLoading(false);
-      }
-    };
-
-    checkSavedCredentials();
+    // Apenas marcar que a página terminou de carregar
+    setIsPageLoading(false);
   }, []);
-
-  const handleAutoLogin = async (savedMatricula: string, rememberToken: string) => {
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('matricula', savedMatricula)
-        .single();
-
-      if (!profile) throw new Error('Perfil não encontrado');
-
-      const { data: authData, error: loginError } = await supabase.auth.signInWithPassword({
-        email: profile.email.toLowerCase(),
-        password: rememberToken
-      });
-
-      if (loginError) throw loginError;
-
-      toast({
-        title: "Login automático realizado",
-        description: `Bem-vindo de volta, ${profile.name}!`,
-      });
-
-      if (profile.user_type === 'aluno') {
-        navigate('/aluno/dashboard');
-      } else if (profile.user_type === 'professor') {
-        navigate('/professor/dashboard');
-      } else if (profile.user_type === 'nutricionista') {
-        navigate('/nutricionista/dashboard');
-      } else {
-        navigate('/aluno/dashboard');
-      }
-    } catch (error) {
-      console.error('Erro no login automático:', error);
-      // Limpar credenciais salvas em caso de erro
-      await supabase
-        .from('saved_credentials')
-        .delete()
-        .match({ matricula: savedMatricula });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,15 +53,6 @@ const Login = () => {
       });
 
       if (loginError) throw loginError;
-
-      // Se "Lembrar de mim" estiver marcado, salvar as credenciais
-      if (rememberMe) {
-        await supabase.from('saved_credentials').upsert({
-          user_id: authData.user?.id,
-          matricula: matricula,
-          remember_token: password
-        }, { onConflict: 'user_id' });
-      }
 
       toast({
         title: "Login bem-sucedido",
@@ -207,21 +135,7 @@ const Login = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                />
-                <label
-                  htmlFor="rememberMe"
-                  className="text-sm text-gray-600 cursor-pointer"
-                >
-                  Lembrar de mim
-                </label>
-              </div>
-
+            <div className="flex justify-center">
               <Link
                 to="/forgot-password"
                 className="text-sm text-primary hover:underline"

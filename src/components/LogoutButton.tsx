@@ -9,38 +9,6 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      // Limpar todas as credenciais salvas do usuário atual
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Limpar credenciais por user_id
-        await supabase
-          .from('saved_credentials')
-          .delete()
-          .match({ user_id: user.id });
-
-        // Limpar credenciais por matricula/siape
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('matricula, siape')
-          .eq('id', user.id)
-          .single();
-
-        if (profile) {
-          if (profile.matricula) {
-            await supabase
-              .from('saved_credentials')
-              .delete()
-              .match({ matricula: profile.matricula });
-          }
-          if (profile.siape) {
-            await supabase
-              .from('saved_credentials')
-              .delete()
-              .match({ siape: profile.siape });
-          }
-        }
-      }
-
       // Fazer logout
       await supabase.auth.signOut();
       
