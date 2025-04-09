@@ -20,6 +20,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   const sheetRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number>(0);
   const currentYRef = useRef<number>(0);
+  const isDraggingRef = useRef<boolean>(false);
 
   useEffect(() => {
     console.log('BottomSheet - Estado open:', open);
@@ -52,14 +53,20 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   }, [open]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Apenas inicia o drag se o toque começar na área do handle
+    const target = e.target as HTMLElement;
+    const handle = target.closest('.bottom-sheet-handle');
+    if (!handle) return;
+
+    isDraggingRef.current = true;
     startYRef.current = e.touches[0].clientY;
     currentYRef.current = e.touches[0].clientY;
-    console.log('BottomSheet - Touch iniciado:', { startY: startYRef.current });
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!sheetRef.current) return;
+    if (!sheetRef.current || !isDraggingRef.current) return;
     
+    e.preventDefault(); // Previne o scroll da página
     currentYRef.current = e.touches[0].clientY;
     const deltaY = currentYRef.current - startYRef.current;
     
@@ -70,7 +77,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   };
 
   const handleTouchEnd = () => {
-    if (!sheetRef.current) return;
+    if (!sheetRef.current || !isDraggingRef.current) return;
     
     const deltaY = currentYRef.current - startYRef.current;
     console.log('BottomSheet - Touch finalizado:', { deltaY });
@@ -83,6 +90,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       sheetRef.current.style.transform = '';
       console.log('BottomSheet - Voltando para posição inicial');
     }
+    
+    isDraggingRef.current = false;
   };
 
   if (!open) {
@@ -114,8 +123,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Handle */}
-        <div className="flex justify-center py-2">
+        {/* Handle - Área arrastável */}
+        <div className="bottom-sheet-handle flex justify-center py-2 cursor-grab active:cursor-grabbing touch-none">
           <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
         </div>
         
@@ -134,7 +143,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         </div>
         
         {/* Content */}
-        <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 4rem)' }}>
+        <div className="overflow-y-auto overscroll-contain" style={{ maxHeight: 'calc(90vh - 4rem)' }}>
           {children}
         </div>
       </div>
