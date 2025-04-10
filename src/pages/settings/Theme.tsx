@@ -55,14 +55,14 @@ const Theme = () => {
                 </div>
               )}
               <h3 className="text-lg font-semibold text-foreground mb-4">Default</h3>
-              <div className="aspect-video rounded-lg overflow-hidden bg-[#244b2c]/10 border border-border/50">
+              <div className="aspect-video rounded-lg overflow-hidden border border-border/50">
                 <img 
-                  src="/logo.png" 
+                  src="/images/ExemploDeafault.png" 
                   alt="Default Theme Preview" 
-                  className="w-full h-full object-contain p-4"
+                  className="w-full h-full object-contain"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2 text-center">Tema padrão</p>
+              <p className="text-xs text-gray-500 mt-2 text-center">Tema padrão com fundo branco e detalhes em verde</p>
             </div>
             
             {/* Total White Theme */}
