@@ -39,21 +39,39 @@ const Theme = () => {
         
         <div className="w-full max-w-2xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Total White Theme */}
+            {/* Default Theme (primeiro lugar) */}
             <div 
               className={cn(
                 "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer relative",
-                currentTheme === 'TOTAL_WHITE' 
+                currentTheme === 'DEFAULT' 
                   ? "border-4 border-green-500" 
                   : "border border-border"
               )}
-              onClick={() => handleThemeSelect('TOTAL_WHITE')}
+              onClick={() => handleThemeSelect('DEFAULT')}
             >
-              {currentTheme === 'TOTAL_WHITE' && (
+              {currentTheme === 'DEFAULT' && (
                 <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
                   <Check size={16} className="text-white" />
                 </div>
               )}
+              <h3 className="text-lg font-semibold text-foreground mb-4">Default</h3>
+              <div className="aspect-video rounded-lg overflow-hidden bg-[#244b2c]/10 border border-border/50">
+                <img 
+                  src="/logo.png" 
+                  alt="Default Theme Preview" 
+                  className="w-full h-full object-contain p-4"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">Tema padrão</p>
+            </div>
+            
+            {/* Total White Theme */}
+            <div 
+              className="bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-not-allowed opacity-50 border border-border relative"
+            >
+              <div className="absolute inset-0 bg-gray-200/40 rounded-xl flex items-center justify-center">
+                <span className="bg-gray-800/70 text-white px-3 py-1 rounded-md text-sm font-medium rotate-[-20deg]">Em breve</span>
+              </div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Total White</h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-white border border-border/50">
                 <img 
@@ -67,19 +85,11 @@ const Theme = () => {
 
             {/* Total Black Theme */}
             <div 
-              className={cn(
-                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer relative",
-                currentTheme === 'TOTAL_BLACK' 
-                  ? "border-4 border-green-500" 
-                  : "border border-border"
-              )}
-              onClick={() => handleThemeSelect('TOTAL_BLACK')}
+              className="bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-not-allowed opacity-50 border border-border relative"
             >
-              {currentTheme === 'TOTAL_BLACK' && (
-                <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
-                  <Check size={16} className="text-white" />
-                </div>
-              )}
+              <div className="absolute inset-0 bg-gray-200/40 rounded-xl flex items-center justify-center">
+                <span className="bg-gray-800/70 text-white px-3 py-1 rounded-md text-sm font-medium rotate-[-20deg]">Em breve</span>
+              </div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Total Black</h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-black border border-border/50">
                 <img 
@@ -105,32 +115,6 @@ const Theme = () => {
                 />
               </div>
               <p className="text-xs text-gray-500 mt-2 text-center">Tema escuro (em breve)</p>
-            </div>
-
-            {/* Default Theme */}
-            <div 
-              className={cn(
-                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer relative",
-                currentTheme === 'DEFAULT' 
-                  ? "border-4 border-green-500" 
-                  : "border border-border"
-              )}
-              onClick={() => handleThemeSelect('DEFAULT')}
-            >
-              {currentTheme === 'DEFAULT' && (
-                <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
-                  <Check size={16} className="text-white" />
-                </div>
-              )}
-              <h3 className="text-lg font-semibold text-foreground mb-4">Default</h3>
-              <div className="aspect-video rounded-lg overflow-hidden bg-[#244b2c]/10 border border-border/50">
-                <img 
-                  src="/logo.png" 
-                  alt="Default Theme Preview" 
-                  className="w-full h-full object-contain p-4"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2 text-center">Tema padrão</p>
             </div>
           </div>
         </div>
