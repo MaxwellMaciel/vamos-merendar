@@ -43,7 +43,7 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 {/* Auth routes */}
-                <Route path="/" element={<Welcome />} />
+                <Route path="/welcome" element={<Welcome />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/nutricionista/login" element={<NutricionistaLogin />} />
                 <Route path="/professor/login" element={<ProfessorLogin />} />
@@ -79,6 +79,7 @@ const App = () => (
                 
                 {/* Rota padrão */}
                 <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </NotificationProvider>

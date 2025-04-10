@@ -1,24 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
-import { toast } from '@/hooks/use-toast';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Welcome = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [userType, setUserType] = useState<string | null>(null);
 
-  const handleLogin = () => {
+  useEffect(() => {
+    // Verificar o tipo de usuário para redirecionar adequadamente
+    const checkUserType = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.user_type) {
+          setUserType(profile.user_type);
+        }
+      }
+    };
+    
+    checkUserType();
+  }, []);
+
+  const handleContinue = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      navigate('/login');
+      
+      // Redirecionar para o dashboard adequado com base no tipo de usuário
+      if (userType === 'aluno') {
+        navigate('/aluno/dashboard');
+      } else if (userType === 'professor') {
+        navigate('/professor/dashboard');
+      } else if (userType === 'nutricionista') {
+        navigate('/nutricionista/dashboard');
+      } else {
+        // Fallback para a página de login se não conseguir determinar o tipo de usuário
+        navigate('/login');
+      }
     }, 500);
-  };
-
-  const handleCreateAccount = () => {
-    navigate('/register');
   };
 
   return (
@@ -36,21 +65,30 @@ const Welcome = () => {
         lugar melhor?
       </p>
 
-      <button 
-        onClick={handleLogin}
-        disabled={loading}
-        className="bg-[#f45b43] text-white py-3 px-4 rounded-lg font-medium transition-all hover:bg-[#f45b43]/90 active:scale-[0.98] w-full max-w-xs mb-3"
-      >
-        {loading ? 'Carregando...' : 'Fazer login'}
-      </button>
-
-      <div className="flex items-center justify-center text-sm text-gray-600">
-        Não tem uma conta?{' '}
+      <div className="w-full max-w-xs space-y-3">
         <button 
-          onClick={handleCreateAccount}
-          className="ml-1 text-[#f45b43] font-medium hover:underline"
+          onClick={handleContinue}
+          disabled={loading}
+          className="bg-[#f45b43] text-white py-3 px-4 rounded-lg font-medium transition-all hover:bg-[#f45b43]/90 active:scale-[0.98] w-full"
         >
-          Crie uma conta
+          {loading ? 'Carregando...' : 'Continuar'}
+        </button>
+        
+        <button 
+          onClick={() => {
+            if (userType === 'aluno') {
+              navigate('/aluno/dashboard');
+            } else if (userType === 'professor') {
+              navigate('/professor/dashboard');
+            } else if (userType === 'nutricionista') {
+              navigate('/nutricionista/dashboard');
+            } else {
+              navigate('/login');
+            }
+          }}
+          className="text-gray-500 text-sm hover:underline w-full text-center py-2"
+        >
+          Pular
         </button>
       </div>
     </div>
