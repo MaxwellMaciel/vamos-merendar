@@ -22,8 +22,6 @@ const Settings = () => {
     switch (profile.user_type) {
       case 'nutricionista':
         return '/nutricionista/dashboard';
-      case 'professor':
-        return '/professor/dashboard';
       default:
         return '/aluno/dashboard';
     }

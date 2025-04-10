@@ -28,7 +28,7 @@ const Register = () => {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
-  const [userType, setUserType] = useState<'aluno' | 'professor'>('aluno');
+  const userType = 'aluno';
 
   useEffect(() => {
     // Simular carregamento da página
@@ -178,8 +178,7 @@ const Register = () => {
         password,
         options: {
           data: {
-            matricula: userType === 'aluno' ? matricula : null,
-            siape: userType === 'professor' ? matricula : null,
+            matricula: matricula,
             name,
             dob,
             phone,
@@ -197,8 +196,7 @@ const Register = () => {
             userData: {
               name,
               email,
-              matricula: userType === 'aluno' ? matricula : null,
-              siape: userType === 'professor' ? matricula : null,
+              matricula: matricula,
               phone,
               user_type: userType
             }
@@ -279,39 +277,12 @@ const Register = () => {
               </div>
               <input
                 type="text"
-                placeholder={userType === 'aluno' ? "Matrícula" : "SIAPE"}
+                placeholder="Matrícula"
                 value={matricula}
                 onChange={(e) => setMatricula(e.target.value)}
                 className="input-primary pl-10 w-full bg-[#fde2a1] shadow-md"
                 required
               />
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="aluno"
-                  name="userType"
-                  value="aluno"
-                  checked={userType === 'aluno'}
-                  onChange={(e) => setUserType(e.target.value as 'aluno')}
-                  className="text-primary"
-                />
-                <label htmlFor="aluno" className="text-sm font-medium">Aluno</label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="professor"
-                  name="userType"
-                  value="professor"
-                  checked={userType === 'professor'}
-                  onChange={(e) => setUserType(e.target.value as 'professor')}
-                  className="text-primary"
-                />
-                <label htmlFor="professor" className="text-sm font-medium">Professor</label>
-              </div>
             </div>
             
             <div className="relative">
@@ -393,7 +364,7 @@ const Register = () => {
                           <div className="bg-gray-50 p-4 rounded-lg">
                             <h3 className="font-bold text-primary mb-2">2. Descrição do Serviço</h3>
                             <p className="text-gray-700">
-                              O "Vamos Merendar" é um aplicativo destinado a alunos, nutricionistas e professores para gerenciamento e planejamento de refeições escolares.
+                              O "Vamos Merendar" é um aplicativo destinado a alunos e nutricionistas para gerenciamento e planejamento de refeições escolares.
                             </p>
                           </div>
                           

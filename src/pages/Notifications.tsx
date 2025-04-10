@@ -18,7 +18,7 @@ const Notifications = () => {
     deleteNotification,
     deleteAllNotifications 
   } = useNotifications();
-  const [userType, setUserType] = useState<'aluno' | 'professor' | 'nutricionista' | null>(null);
+  const [userType, setUserType] = useState<'aluno' | 'nutricionista' | null>(null);
   const [draggedNotification, setDraggedNotification] = useState<{ id: string, offset: number, startX: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -33,7 +33,7 @@ const Notifications = () => {
           .single();
 
         if (profile?.user_type) {
-          setUserType(profile.user_type as 'aluno' | 'professor' | 'nutricionista');
+          setUserType(profile.user_type as 'aluno' | 'nutricionista');
         }
       } else {
         // Se não houver usuário logado, redireciona para login
@@ -48,8 +48,6 @@ const Notifications = () => {
     switch (userType) {
       case 'aluno':
         return '/aluno/dashboard';
-      case 'professor':
-        return '/professor/dashboard';
       case 'nutricionista':
         return '/nutricionista/dashboard';
       default:

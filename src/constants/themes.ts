@@ -1,7 +1,81 @@
 export const THEME_NAMES = {
-  DEFAULT: 'default',
-  TOTAL_BLACK: 'total-black',
-  TOTAL_WHITE: 'total-white',
+  DEFAULT: 'DEFAULT',
+  TOTAL_BLACK: 'TOTAL_BLACK',
+  TOTAL_WHITE: 'TOTAL_WHITE',
+} as const;
+
+export const DEFAULT_COLORS = {
+  // Cores principais
+  background: '#ffffff',
+  foreground: '#1a1a1a',
+  
+  // Cards e elementos de UI
+  card: '#ffffff',
+  'card-foreground': '#1a1a1a',
+  
+  // Cores primárias
+  primary: '#2d724a',
+  'primary-foreground': '#ffffff',
+  'primary-hover': '#1f5c38',
+  
+  // Cores secundárias
+  secondary: '#F37566',
+  'secondary-foreground': '#ffffff',
+  'secondary-hover': '#D13B2A',
+  
+  // Bordas e divisores
+  border: '#e5e5e5',
+  input: '#e5e5e5',
+  
+  // Estados e ações
+  muted: '#f5f5f5',
+  'muted-foreground': '#737373',
+  
+  accent: '#f5f5f5',
+  'accent-foreground': '#1a1a1a',
+  
+  // Feedback e alertas
+  destructive: '#D13B2A',
+  'destructive-foreground': '#ffffff',
+  
+  ring: '#2d724a',
+} as const;
+
+export const TOTAL_WHITE_COLORS = {
+  // Cores principais
+  background: '#FFFFFF',
+  foreground: '#000000',
+  
+  // Cards e elementos de UI
+  card: '#FFFFFF',
+  'card-foreground': '#000000',
+  
+  // Cores primárias
+  primary: '#FFFFFF',
+  'primary-foreground': '#000000',
+  'primary-hover': '#F5F5F5',
+  
+  // Cores secundárias
+  secondary: '#FFFFFF',
+  'secondary-foreground': '#000000',
+  'secondary-hover': '#F5F5F5',
+  
+  // Bordas e divisores
+  border: '#E0E0E0',
+  input: '#E0E0E0',
+  
+  // Estados e ações
+  muted: '#FAFAFA',
+  'muted-foreground': '#555555',
+  
+  accent: '#FAFAFA',
+  'accent-foreground': '#000000',
+  
+  // Feedback e alertas
+  destructive: '#FFFFFF',
+  'destructive-foreground': '#FF0000',
+  
+  ring: '#E0E0E0',
 } as const;
 
 export const TOTAL_BLACK_COLORS = {

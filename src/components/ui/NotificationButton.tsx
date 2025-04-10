@@ -16,8 +16,6 @@ const NotificationButton = ({ className = '' }: NotificationButtonProps) => {
     switch (profile?.user_type) {
       case 'aluno':
         return '/aluno/notifications';
-      case 'professor':
-        return '/professor/notifications';
       case 'nutricionista':
         return '/nutricionista/notifications';
       default:

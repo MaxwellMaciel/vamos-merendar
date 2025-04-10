@@ -39,8 +39,6 @@ const Welcome = () => {
       // Redirecionar para o dashboard adequado com base no tipo de usuário
       if (userType === 'aluno') {
         navigate('/aluno/dashboard');
-      } else if (userType === 'professor') {
-        navigate('/professor/dashboard');
       } else if (userType === 'nutricionista') {
         navigate('/nutricionista/dashboard');
       } else {
@@ -78,8 +76,6 @@ const Welcome = () => {
           onClick={() => {
             if (userType === 'aluno') {
               navigate('/aluno/dashboard');
-            } else if (userType === 'professor') {
-              navigate('/professor/dashboard');
             } else if (userType === 'nutricionista') {
               navigate('/nutricionista/dashboard');
             } else {

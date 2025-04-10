@@ -18,7 +18,7 @@ export type Database = {
           email: string;
           name: string;
           matricula: string;
-          user_type: 'aluno' | 'professor' | 'nutricionista';
+          user_type: 'aluno' | 'nutricionista';
           created_at: string;
           updated_at: string;
         };
@@ -27,7 +27,7 @@ export type Database = {
           email: string;
           name: string;
           matricula: string;
-          user_type: 'aluno' | 'professor' | 'nutricionista';
+          user_type: 'aluno' | 'nutricionista';
           created_at?: string;
           updated_at?: string;
         };
@@ -36,7 +36,7 @@ export type Database = {
           email?: string;
           name?: string;
           matricula?: string;
-          user_type?: 'aluno' | 'professor' | 'nutricionista';
+          user_type?: 'aluno' | 'nutricionista';
           created_at?: string;
           updated_at?: string;
         };

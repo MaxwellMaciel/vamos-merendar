@@ -60,7 +60,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const filteredNotifications = data.filter(notification => {
         if (!notification.target_audience) return true;
         const userType = profile?.user_type;
-        return notification.target_audience.includes(userType === 'aluno' ? 'alunos' : 'professores');
+        return notification.target_audience.includes('alunos');
       });
 
       setNotifications(filteredNotifications.map(notification => ({
@@ -87,7 +87,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         (payload) => {
           const newNotification = payload.new as any;
           if (!newNotification.target_audience || 
-              newNotification.target_audience.includes(profile?.user_type === 'aluno' ? 'alunos' : 'professores')) {
+              newNotification.target_audience.includes('alunos')) {
             const notification = {
               ...newNotification,
               date: new Date(newNotification.created_at),
