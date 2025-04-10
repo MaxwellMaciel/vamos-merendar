@@ -668,13 +668,6 @@ const Dashboard = () => {
           <MessageSquare size={18} className="mr-2" />
           <span>Deixar Comentários e Sugestões</span>
         </button>
-
-        <button 
-          className="bg-[#f45b43] hover:bg-[#f45b43]/90 text-white w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all"
-        >
-          <Calendar size={18} className="mr-2" />
-          <span>Reposições e Anteposições</span>
-        </button>
       </div>
       
       {profile?.user_id && activeMealType && mealAttendance.id && (

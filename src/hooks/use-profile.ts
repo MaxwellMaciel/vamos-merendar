@@ -11,7 +11,7 @@ export interface Profile {
   matricula: string | null;
   siape: string | null;
   user_id: string;
-  user_type: 'aluno' | 'professor' | 'nutricionista';
+  user_type: 'aluno' | 'nutricionista';
   dietary_restrictions?: string | null;
   created_at?: string;
 }

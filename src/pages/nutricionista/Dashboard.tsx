@@ -318,13 +318,6 @@ const Dashboard = () => {
           <MessageSquare size={18} className="mr-2" />
           <span className="text-sm">Ver Comentários e Sugestões</span>
         </Link>
-
-        <button 
-          className="bg-[#f45b43] hover:bg-[#f45b43]/90 text-white w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all"
-        >
-          <Calendar size={18} className="mr-2" />
-          <span className="text-sm">Reposições e Anteposições</span>
-        </button>
       </div>
 
       {/* Modal de Confirmações */}

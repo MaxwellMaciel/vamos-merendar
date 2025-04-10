@@ -74,8 +74,6 @@ const Login = () => {
       // Redirecionamento normal para o dashboard
       if (profile.user_type === 'aluno') {
         navigate('/aluno/dashboard');
-      } else if (profile.user_type === 'professor') {
-        navigate('/professor/dashboard');
       } else if (profile.user_type === 'nutricionista') {
         navigate('/nutricionista/dashboard');
       } else {
@@ -164,18 +162,12 @@ const Login = () => {
             <div className="h-px bg-gray-200 flex-1"></div>
           </div>
           
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-6">
             <Link
               to="/nutricionista/login"
-              className="btn-outline text-center text-sm py-2 shadow-md"
+              className="btn-outline text-center text-sm py-2 shadow-md w-full block"
             >
               Nutricionista
-            </Link>
-            <Link
-              to="/professor/login"
-              className="btn-outline text-center text-sm py-2 shadow-md"
-            >
-              Professor(a)
             </Link>
           </div>
           

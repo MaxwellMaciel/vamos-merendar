@@ -36,8 +36,7 @@ const Notifications = () => {
     description: '',
     type: 'menu' as keyof typeof NotificationType,
     targetAudience: {
-      alunos: true,
-      professores: false
+      alunos: true
     }
   });
   const [viewType, setViewType] = useState('received');
@@ -54,7 +53,8 @@ const Notifications = () => {
         .select('user_id, user_type')
         .in('user_type', Object.entries(newNotification.targetAudience)
           .filter(([_, value]) => value)
-          .map(([key]) => key === 'alunos' ? 'aluno' : 'professor'));
+          .map(([key]) => key === 'alunos' ? 'aluno' : null)
+          .filter(Boolean));
 
       if (userError) throw userError;
 
@@ -118,8 +118,7 @@ const Notifications = () => {
         description: '',
         type: 'menu',
         targetAudience: {
-          alunos: true,
-          professores: false
+          alunos: true
         }
       });
     } catch (error) {
@@ -237,22 +236,6 @@ const Notifications = () => {
                       }
                     />
                     <Label htmlFor="alunos" className="text-sm sm:text-base text-gray-700">Alunos</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="professores"
-                      checked={newNotification.targetAudience.professores}
-                      onCheckedChange={(checked) => 
-                        setNewNotification(prev => ({
-                          ...prev,
-                          targetAudience: {
-                            ...prev.targetAudience,
-                            professores: checked as boolean
-                          }
-                        }))
-                      }
-                    />
-                    <Label htmlFor="professores" className="text-sm sm:text-base text-gray-700">Professores</Label>
                   </div>
                 </div>
               </div>

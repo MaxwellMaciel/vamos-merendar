@@ -5,14 +5,12 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import NutricionistaLogin from "./pages/nutricionista/Login";
-import ProfessorLogin from "./pages/professor/Login";
 import Register from "./pages/Register";
 import DietaryRestrictionsRegistration from "./pages/DietaryRestrictions";
 import RegistrationSuccess from "./pages/RegistrationSuccess";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AlunoDashboard from "./pages/aluno/Dashboard";
-import ProfessorDashboard from "./pages/professor/Dashboard";
 import NutricionistaDashboard from "./pages/nutricionista/Dashboard";
 import NutricionistaWeeklyMenu from "./pages/nutricionista/WeeklyMenu";
 import NutricionistaFeedback from "./pages/nutricionista/Feedback";
@@ -46,7 +44,6 @@ const App = () => (
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/nutricionista/login" element={<NutricionistaLogin />} />
-                <Route path="/professor/login" element={<ProfessorLogin />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/dietary-restrictions" element={<DietaryRestrictionsRegistration />} />
                 <Route path="/registration-success" element={<RegistrationSuccess />} />
@@ -56,8 +53,6 @@ const App = () => (
                 {/* Dashboard routes */}
                 <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
                 <Route path="/aluno/notifications" element={<Notifications />} />
-                <Route path="/professor/dashboard" element={<ProfessorDashboard />} />
-                <Route path="/professor/notifications" element={<Notifications />} />
                 <Route path="/nutricionista/dashboard" element={<NutricionistaDashboard />} />
                 <Route path="/nutricionista/notifications" element={<NutricionistaNotifications />} />
                 <Route path="/nutricionista/menu" element={<NutricionistaWeeklyMenu />} />

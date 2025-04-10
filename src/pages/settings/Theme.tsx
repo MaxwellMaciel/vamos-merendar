@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import StatusBar from '@/components/StatusBar';
 import BackButton from '@/components/ui/BackButton';
-import { Palette } from 'lucide-react';
+import { Palette, Check } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { THEME_NAMES } from '@/constants/themes';
 import { cn } from '@/lib/utils';
@@ -9,7 +9,12 @@ import { cn } from '@/lib/utils';
 const Theme = () => {
   const { currentTheme, setTheme } = useTheme();
 
+  useEffect(() => {
+    console.log('Tema atual carregado:', currentTheme);
+  }, [currentTheme]);
+
   const handleThemeSelect = async (themeName: string) => {
+    console.log('Selecionando tema:', themeName);
     await setTheme(themeName as keyof typeof THEME_NAMES);
   };
 
@@ -37,11 +42,18 @@ const Theme = () => {
             {/* Total White Theme */}
             <div 
               className={cn(
-                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer border border-border",
-                currentTheme === THEME_NAMES.TOTAL_WHITE && "ring-2 ring-primary"
+                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer relative",
+                currentTheme === 'TOTAL_WHITE' 
+                  ? "border-4 border-green-500" 
+                  : "border border-border"
               )}
-              onClick={() => handleThemeSelect(THEME_NAMES.TOTAL_WHITE)}
+              onClick={() => handleThemeSelect('TOTAL_WHITE')}
             >
+              {currentTheme === 'TOTAL_WHITE' && (
+                <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
+                  <Check size={16} className="text-white" />
+                </div>
+              )}
               <h3 className="text-lg font-semibold text-foreground mb-4">Total White</h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-white border border-border/50">
                 <img 
@@ -50,16 +62,24 @@ const Theme = () => {
                   className="w-full h-full object-contain p-4"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">Tema branco total</p>
             </div>
 
             {/* Total Black Theme */}
             <div 
               className={cn(
-                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer border border-border",
-                currentTheme === THEME_NAMES.TOTAL_BLACK && "ring-2 ring-primary"
+                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer relative",
+                currentTheme === 'TOTAL_BLACK' 
+                  ? "border-4 border-green-500" 
+                  : "border border-border"
               )}
-              onClick={() => handleThemeSelect(THEME_NAMES.TOTAL_BLACK)}
+              onClick={() => handleThemeSelect('TOTAL_BLACK')}
             >
+              {currentTheme === 'TOTAL_BLACK' && (
+                <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
+                  <Check size={16} className="text-white" />
+                </div>
+              )}
               <h3 className="text-lg font-semibold text-foreground mb-4">Total Black</h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-black border border-border/50">
                 <img 
@@ -68,10 +88,14 @@ const Theme = () => {
                   className="w-full h-full object-contain p-4"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">Tema preto total</p>
             </div>
 
-            {/* Dark Mode Theme */}
-            <div className="bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer border border-border">
+            {/* Dark Mode Theme (desativado por enquanto) */}
+            <div className="bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-not-allowed opacity-50 border border-border relative">
+              <div className="absolute inset-0 bg-gray-200/40 rounded-xl flex items-center justify-center">
+                <span className="bg-gray-800/70 text-white px-3 py-1 rounded-md text-sm font-medium rotate-[-20deg]">Em breve</span>
+              </div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Dark Mode</h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-[#1a1a1a] border border-border/50">
                 <img 
@@ -80,16 +104,24 @@ const Theme = () => {
                   className="w-full h-full object-contain p-4"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">Tema escuro (em breve)</p>
             </div>
 
             {/* Default Theme */}
             <div 
               className={cn(
-                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer border border-border",
-                currentTheme === THEME_NAMES.DEFAULT && "ring-2 ring-primary"
+                "bg-white/30 hover:bg-white/40 rounded-xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer relative",
+                currentTheme === 'DEFAULT' 
+                  ? "border-4 border-green-500" 
+                  : "border border-border"
               )}
-              onClick={() => handleThemeSelect(THEME_NAMES.DEFAULT)}
+              onClick={() => handleThemeSelect('DEFAULT')}
             >
+              {currentTheme === 'DEFAULT' && (
+                <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
+                  <Check size={16} className="text-white" />
+                </div>
+              )}
               <h3 className="text-lg font-semibold text-foreground mb-4">Default</h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-[#244b2c]/10 border border-border/50">
                 <img 
@@ -98,6 +130,7 @@ const Theme = () => {
                   className="w-full h-full object-contain p-4"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">Tema padrão</p>
             </div>
           </div>
         </div>
