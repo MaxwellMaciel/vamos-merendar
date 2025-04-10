@@ -43,6 +43,17 @@ const ProfessorLogin = () => {
           title: "Login bem-sucedido",
           description: "Bem-vindo(a), Professor(a)!",
         });
+        
+        // Para o modo de teste, podemos usar um ID fixo
+        const testUserId = 'professor-test';
+        const welcomeShown = localStorage.getItem(`welcome_shown_${testUserId}`);
+        
+        if (!welcomeShown) {
+          localStorage.setItem(`welcome_shown_${testUserId}`, 'true');
+          navigate('/welcome');
+          return;
+        }
+        
         navigate('/professor/dashboard');
         return;
       }
@@ -72,6 +83,18 @@ const ProfessorLogin = () => {
         title: "Login bem-sucedido",
         description: `Bem-vindo(a), Professor(a) ${profileData.name ? profileData.name.split(' ')[0] : ''}!`,
       });
+      
+      // Verificar se é o primeiro login do usuário
+      const userId = data.user?.id;
+      const welcomeShown = localStorage.getItem(`welcome_shown_${userId}`);
+      
+      if (!welcomeShown && userId) {
+        // Marcar que a tela de boas-vindas foi mostrada para este usuário
+        localStorage.setItem(`welcome_shown_${userId}`, 'true');
+        // Redirecionar para a página de boas-vindas
+        navigate('/welcome');
+        return;
+      }
       
       navigate('/professor/dashboard');
     } catch (error: any) {

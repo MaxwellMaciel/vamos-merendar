@@ -61,6 +61,18 @@ const Login = () => {
         description: `Bem-vindo de volta, ${profile.name}!`,
       });
 
+      // Verificar se é o primeiro login do usuário
+      const userId = authData.user?.id;
+      const welcomeShown = localStorage.getItem(`welcome_shown_${userId}`);
+      
+      if (!welcomeShown && userId) {
+        // Marcar que a tela de boas-vindas foi mostrada para este usuário
+        localStorage.setItem(`welcome_shown_${userId}`, 'true');
+        // Redirecionar para a página de boas-vindas
+        navigate('/welcome');
+        return;
+      }
+
       navigate('/nutricionista/dashboard');
     } catch (error: any) {
       console.error('Erro no login:', error);
