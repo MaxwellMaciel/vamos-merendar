@@ -3,7 +3,7 @@ import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import StatusBar from '../../components/StatusBar';
 import DaySelector from '../../components/calendar/DaySelector';
-import { Calendar, Utensils, PieChart, Edit, MessageSquare, Settings, Bell, ClipboardList, Users, X } from 'lucide-react';
+import { Calendar, Utensils, PieChart, Edit, MessageSquare, Settings, Bell, ClipboardList, Users, X, QrCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import NotificationButton from '@/components/ui/NotificationButton';
 import { supabase } from '@/lib/supabase';
@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast";
 import MealConfirmations from '@/components/meals/MealConfirmations';
 import Loading from '@/components/Loading';
 import BottomSheet from '@/components/ui/BottomSheet';
+import QRCodeScanner from '@/components/qrcode/QRCodeScanner';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type WeeklyMenu = Database['public']['Tables']['weekly_menu']['Row'];
@@ -38,6 +39,7 @@ const Dashboard = () => {
   const { unreadCount } = useNotifications();
   const [showConfirmationsList, setShowConfirmationsList] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<'breakfast' | 'lunch' | 'snack' | null>(null);
+  const [showQRCodeSheet, setShowQRCodeSheet] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -191,6 +193,15 @@ const Dashboard = () => {
     console.log('Dashboard - Estado do BottomSheet:', { showConfirmationsList, selectedMealType });
   }, [showConfirmationsList, selectedMealType]);
 
+  const handleQRCodeScan = (decodedText: string) => {
+    console.log('QR Code lido:', decodedText);
+    // Aqui você pode implementar a lógica para processar o QR code lido
+  };
+
+  const handleQRCodeError = (error: string) => {
+    console.error('Erro ao ler QR Code:', error);
+  };
+
   if (loading) {
     return <Loading message="Carregando dashboard..." />;
   }
@@ -229,6 +240,13 @@ const Dashboard = () => {
           <div className="ml-4">
             <NotificationButton />
           </div>
+          <button 
+            type="button" 
+            className="text-[#244b2c] hover:text-[#244b2c]/90 transition-colors"
+            onClick={() => setShowQRCodeSheet(true)}
+          >
+            <QrCode size={24} />
+          </button>
           <Link 
             to="/nutricionista/attendance" 
             className="text-[#244b2c] hover:text-[#244b2c]/90 transition-colors"
@@ -333,6 +351,20 @@ const Dashboard = () => {
           />
         </BottomSheet>
       )}
+
+      {/* BottomSheet do QR Code */}
+      <BottomSheet
+        open={showQRCodeSheet}
+        onOpenChange={setShowQRCodeSheet}
+        title="Leitor de QR Code"
+      >
+        <div className="p-6">
+          <QRCodeScanner
+            onScanSuccess={handleQRCodeScan}
+            onScanError={handleQRCodeError}
+          />
+        </div>
+      </BottomSheet>
     </div>
   );
 };
