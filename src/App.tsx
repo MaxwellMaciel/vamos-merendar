@@ -1,7 +1,11 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ThemeProvider } from "./contexts/ThemeContext";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import NutricionistaLogin from "./pages/nutricionista/Login";
@@ -26,41 +30,84 @@ import About from "./pages/About";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import Notifications from "./pages/Notifications";
-import { NotificationProvider } from "./contexts/NotificationContext";
 import NutricionistaNotifications from './pages/nutricionista/Notifications';
-import { AuthProvider } from '@/contexts/AuthContext';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <AuthProvider>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <NotificationProvider>
-            <BrowserRouter>
+const App = () => {
+  return (
+    <Router>
+      <AuthProvider>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
               <Routes>
-                {/* Auth routes */}
-                <Route path="/welcome" element={<Welcome />} />
+                {/* Rotas públicas */}
                 <Route path="/login" element={<Login />} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/help" element={<Help />} />
+
+                {/* Rotas protegidas */}
+                <Route
+                  path="/aluno/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <AlunoDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/nutricionista/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <NutricionistaDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/nutricionista/menu"
+                  element={
+                    <ProtectedRoute>
+                      <NutricionistaWeeklyMenu />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/nutricionista/attendance"
+                  element={
+                    <ProtectedRoute>
+                      <NutricionistaAttendanceLog />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/nutricionista/feedback"
+                  element={
+                    <ProtectedRoute>
+                      <NutricionistaFeedback />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Auth routes */}
                 <Route path="/nutricionista/login" element={<NutricionistaLogin />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/dietary-restrictions" element={<DietaryRestrictionsRegistration />} />
                 <Route path="/registration-success" element={<RegistrationSuccess />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                
-                {/* Dashboard routes */}
-                <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
                 <Route path="/aluno/notifications" element={<Notifications />} />
-                <Route path="/nutricionista/dashboard" element={<NutricionistaDashboard />} />
                 <Route path="/nutricionista/notifications" element={<NutricionistaNotifications />} />
-                <Route path="/nutricionista/menu" element={<NutricionistaWeeklyMenu />} />
-                <Route path="/nutricionista/feedback" element={<NutricionistaFeedback />} />
-                <Route path="/nutricionista/attendance" element={<NutricionistaAttendanceLog />} />
                 
                 {/* Settings routes */}
-                <Route path="/settings" element={<Settings />} />
                 <Route path="/settings/password" element={<ChangePassword />} />
                 <Route path="/settings/personal" element={<PersonalInfo />} />
                 <Route path="/settings/theme" element={<Theme />} />
@@ -70,18 +117,18 @@ const App = () => (
                 
                 {/* Info routes */}
                 <Route path="/about" element={<About />} />
-                <Route path="/help" element={<Help />} />
                 
-                {/* Rota padrão */}
+                {/* Redirecionamento padrão */}
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </NotificationProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </AuthProvider>
-);
+              <Toaster />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </Router>
+  );
+};
 
 export default App;

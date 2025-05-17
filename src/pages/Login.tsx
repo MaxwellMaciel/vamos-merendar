@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../components/Logo';
 import PasswordInput from '../components/auth/PasswordInput';
 import { IdCard } from 'lucide-react';
@@ -7,95 +7,46 @@ import StatusBar from '../components/StatusBar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Loading from '../components/Loading';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const [matricula, setMatricula] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isPageLoading, setIsPageLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn } = useAuth();
 
-  React.useEffect(() => {
-    // Apenas marcar que a página terminou de carregar
-    setIsPageLoading(false);
-  }, []);
+  // Obtém a URL de redirecionamento do estado da localização ou usa a rota padrão
+  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
-    if (!matricula || !password) {
-      setError('Por favor, preencha todos os campos.');
-      return;
-    }
-    
-    setLoading(true);
-    
+    setIsLoading(true);
+
     try {
-      console.log('Iniciando processo de login...');
-      
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('matricula', matricula)
-        .single();
-
-      if (profileError || !profile) {
-        throw new Error('Matrícula não encontrada.');
-      }
-
-      const { data: authData, error: loginError } = await supabase.auth.signInWithPassword({
-        email: profile.email.toLowerCase(),
-        password: password
-      });
-
-      if (loginError) throw loginError;
-
+      await signIn(email, password);
       toast({
-        title: "Login bem-sucedido",
-        description: `Bem-vindo de volta, ${profile.name}!`,
+        title: "Login realizado com sucesso!",
+        description: "Bem-vindo de volta!",
       });
-
-      // Verificar se é o primeiro login do usuário
-      const userId = authData.user?.id;
-      const welcomeShown = localStorage.getItem(`welcome_shown_${userId}`);
-      
-      if (!welcomeShown && userId) {
-        // Marcar que a tela de boas-vindas foi mostrada para este usuário
-        localStorage.setItem(`welcome_shown_${userId}`, 'true');
-        // Redirecionar para a página de boas-vindas
-        navigate('/welcome');
-        return;
-      }
-
-      // Redirecionamento normal para o dashboard
-      if (profile.user_type === 'aluno') {
-        navigate('/aluno/dashboard');
-      } else if (profile.user_type === 'nutricionista') {
-        navigate('/nutricionista/dashboard');
-      } else {
-        navigate('/aluno/dashboard');
-      }
-    } catch (error: any) {
+      // Redireciona para a página que o usuário tentou acessar ou para a rota padrão
+      navigate(from, { replace: true });
+    } catch (error) {
       console.error('Erro no login:', error);
-      
-      if (error.message === 'Matrícula não encontrada.') {
-        setError('Matrícula não encontrada. Verifique se digitou corretamente.');
-      } else if (error.message === 'Invalid login credentials') {
-        setError('Senha incorreta. Verifique se digitou corretamente.');
-      } else {
-        setError('Ocorreu um erro ao fazer login. Por favor, tente novamente.');
-      }
+      toast({
+        title: "Erro no login",
+        description: "Verifique suas credenciais e tente novamente.",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  if (isPageLoading) {
-    return <Loading message="Carregando página de login..." />;
+  if (isLoading) {
+    return <Loading message="Realizando login..." />;
   }
 
   return (
@@ -106,12 +57,6 @@ const Login = () => {
         <Logo size="md" className="mb-6" />
         
         <div className="w-full max-w-sm">
-          {error && (
-            <div className="mb-4 p-3 bg-[#f45b43]/10 border border-[#f45b43]/20 rounded-lg text-[#f45b43] text-sm animate-in fade-in">
-              {error}
-            </div>
-          )}
-          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <div className="relative">
@@ -119,10 +64,10 @@ const Login = () => {
                   <IdCard size={18} />
                 </div>
                 <input
-                  type="text"
-                  placeholder="Matrícula/SIAPE"
-                  value={matricula}
-                  onChange={(e) => setMatricula(e.target.value)}
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="input-primary pl-10 w-full shadow-md"
                 />
               </div>
@@ -139,10 +84,9 @@ const Login = () => {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={loading}
                 className="w-full bg-[#f45b43] hover:bg-[#f45b43]/90 text-white py-3 px-4 rounded-lg font-medium transition-all"
               >
-                {loading ? 'Entrando...' : 'Entrar'}
+                Entrar
               </button>
             </div>
 
