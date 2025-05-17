@@ -357,6 +357,7 @@ const Dashboard = () => {
         open={showQRCodeSheet}
         onOpenChange={setShowQRCodeSheet}
         title="Leitor de QR Code"
+        fullHeight={true}
       >
         <div className="p-6">
           <QRCodeScanner
